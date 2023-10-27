@@ -16,10 +16,11 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxt/image',
-    'nuxt-vuefire',
+    '@nuxtjs/apollo',
     '@pinia/nuxt',
     '@pinia-plugin-persistedstate/nuxt',
     'nuxt-swiper',
+    // 'nuxt-vuefire',
   ],
 
   devtools: {
@@ -32,43 +33,37 @@ export default defineNuxtConfig({
 
   build: {
     // vue-toastification - old commonjs module
-    transpile: [
-      'vue-toastification',
-      '@vuepic/vue-datepicker',
-    ],
+    transpile: ['vue-toastification', '@vuepic/vue-datepicker'],
   },
 
-  vuefire: {
-    auth: true,
-    config: {
-      apiKey:
-        process.env.FIREBASE_API_KEY,
-      authDomain:
-        process.env
-          .FIREBASE_AUTH_DOMAIN,
-      projectId:
-        process.env.FIREBASE_PROJECT_ID,
-      storageBucket:
-        process.env
-          .FIREBASE_STORAGE_BUCKET,
-      messagingSenderId:
-        process.env
-          .FIREBASE_MESSAGIN_SENDER_ID,
-      appId:
-        process.env.FIREBASE_APP_ID,
-      measurementId:
-        process.env
-          .FIREBASE_MEASUREMENT_ID,
+  apollo: {
+    autoImports: true,
+    clients: {
+      default: {
+        httpEndpoint: process.env.STRAPI_URL + '/graphql',
+      },
     },
   },
+
+  // vuefire: {
+  //   auth: true,
+  //   config: {
+  //     apiKey: process.env.FIREBASE_API_KEY,
+  //     authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  //     projectId: process.env.FIREBASE_PROJECT_ID,
+  //     storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  //     messagingSenderId: process.env.FIREBASE_MESSAGIN_SENDER_ID,
+  //     appId: process.env.FIREBASE_APP_ID,
+  //     measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+  //   },
+  // },
 
   pinia: {
     autoImports: ['defineStore'],
   },
 
   tailwindcss: {
-    cssPath:
-      '~/assets/css/tailwind.css',
+    cssPath: '~/assets/css/tailwind.css',
     configPath: 'tailwind.config.js',
     exposeConfig: false,
     injectPosition: 0,

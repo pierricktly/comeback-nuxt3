@@ -2,35 +2,35 @@
 import { Timestamp, doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { useToast } from 'vue-toastification'
 
-const db = await useFirestore()
-const toast = useToast()
+// const db = await useFirestore()
+// const toast = useToast()
 
-const styleFetch = ref([] as any[])
-const newStyle = ref('')
+// const styleFetch = ref([] as any[])
+// const newStyle = ref('')
 
-onMounted(async () => {
-  onSnapshot(doc(db as any, 'general', 'data'), (doc) => {
-    styleFetch.value = doc?.data().styles
-    styleFetch.value.sort((a, b) => {
-      return a.name.localeCompare(b.name)
-    })
-  })
-})
+// onMounted(async () => {
+//   onSnapshot(doc(db as any, 'general', 'data'), (doc) => {
+//     styleFetch.value = doc?.data().styles
+//     styleFetch.value.sort((a, b) => {
+//       return a.name.localeCompare(b.name)
+//     })
+//   })
+// })
 
-const createStyle = async () => {
-  await setDoc(doc(db as any, 'general', 'data'), {
-    styles: [
-      {
-        created: Timestamp.now(),
-        name: newStyle.value,
-      },
-      ...styleFetch.value,
-    ],
-  }).then(() => {
-    toast.success('Style added')
-    newStyle.value = ''
-  })
-}
+// const createStyle = async () => {
+//   await setDoc(doc(db as any, 'general', 'data'), {
+//     styles: [
+//       {
+//         created: Timestamp.now(),
+//         name: newStyle.value,
+//       },
+//       ...styleFetch.value,
+//     ],
+//   }).then(() => {
+//     toast.success('Style added')
+//     newStyle.value = ''
+//   })
+// }
 </script>
 
 <template>

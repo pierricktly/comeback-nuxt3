@@ -25,3 +25,4 @@ logs
 .npmrc
 
 service-account.json
+firebase.json

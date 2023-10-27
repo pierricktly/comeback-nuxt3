@@ -1,47 +1,138 @@
 <script setup lang="ts">
-import { Timestamp, collection, doc, onSnapshot, query, where, orderBy, limit } from 'firebase/firestore'
-import { GRAPHQL_ENDPOINT } from '@/constants/graphql'
+import * as gQuery from '@/constants/graphql'
 
-const db = useFirestore()
+const newsToday = ref<any[]>([])
+const randomSongs = ref<any[]>([])
+const lastRelease = ref<any[]>([])
+const lastArtistAdded = ref<any[]>([])
 
-const news = ref([] as any[])
-const artists = ref([] as any[])
-const releases = ref([] as any[])
+interface Artist {
+  id: string
+  name: string
+  images: string[]
+}
 
-const newsFetched = ref(false)
+interface Comeback {
+  id: string
+  date: string
+  message: string
+  artist: Artist
+}
 
-const newsToday = computed(() => {
-  return news.value.filter((news: any) => {
-    const newsDate = new Date(news.date.seconds * 1000)
-    const today = new Date()
-    return newsDate.getDate() === today.getDate() && newsDate.getMonth() === today.getMonth() && newsDate.getFullYear() === today.getFullYear()
+interface Release {
+  id: string
+  idYoutubeMusic: string
+  name: string
+  date: string
+  images: string[]
+  artist: Artist
+}
+
+const getRandomMusics = async () => {
+  const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_MUSICS_COUNT)
+
+  if (data.value) {
+    const totalNumber = data.value.musics.meta.pagination.total - 1
+    // console.log('totalNumber', totalNumber)
+    const randomNumbers: number[] = []
+    while (randomNumbers.length < 5) {
+      const randomNumber = Math.floor(Math.random() * totalNumber)
+      if (!randomNumbers.includes(randomNumber)) {
+        randomNumbers.push(randomNumber)
+      }
+    }
+    // console.log('randomNumbers', randomNumbers)
+
+    const songPromises = randomNumbers.map((randomNumber) => {
+      return useAsyncQuery(gQuery.GRAPHQL_QUERY_GET_MUSICS_NUMBER, {
+        start: randomNumber,
+        limit: 1,
+      })
+    })
+
+    const songResults = await Promise.all(songPromises)
+
+    songResults.forEach((result) => {
+      // console.log('result', result.data.value)
+      if (result.data.value?.musics.data[0]) {
+        randomSongs.value.push(result.data.value.musics.data[0])
+      }
+    })
+    // console.log('randomSongs', randomSongs.value)
+  }
+}
+
+const getTodayComebacks = async () => {
+  const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_GET_TODAY_COMEBACK, {
+    filters: {
+      date: {
+        eq: new Date().toISOString().split('T')[0],
+      },
+    },
   })
-})
+  if (data.value) {
+    data.value.comebacks.data.map((comeback: any) => {
+      formatComebackObject(comeback).then((cb) => {
+        newsToday.value.push(cb)
+      })
+    })
+  }
+}
+
+const getLastRelease = async () => {
+  // TODO: get last release
+  const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_LATEST_RELEASE)
+  if (data.value) {
+    data.value.releases.data.map((release: any) => {
+      formatReleaseObject(release).then((r) => {
+        lastRelease.value.push(r)
+      })
+    })
+  }
+}
+
+const getLastArtistAdded = async () => {
+  // TODO: get last artist added
+}
+
+const formatComebackObject = async (comeback: any) => {
+  let cb = {} as Comeback
+
+  cb.id = comeback.id
+  cb.date = comeback.attributes.date
+  cb.message = comeback.attributes.message
+  cb.artist = {
+    id: comeback.attributes.artist.data.id,
+    name: comeback.attributes.artist.data.attributes.name,
+    images: comeback.attributes.artist.data.attributes.images,
+  }
+
+  return cb
+}
+
+const formatReleaseObject = async (release: any) => {
+  let r = {} as Release
+
+  r.id = release.id
+  r.idYoutubeMusic = release.attributes.idYoutubeMusic
+  r.name = release.attributes.name
+  r.date = release.attributes.dateRelease
+  r.images = release.attributes.images
+  r.artist = {
+    id: release.attributes.artists.data[0].id,
+    name: release.attributes.artists.data[0].attributes.name,
+    images: release.attributes.artists.data[0].attributes.images,
+  }
+
+  return r
+}
 
 onMounted(async () => {
-  newsFetching()
-
-  const artistDate = new Date()
-  artists.value = await fetchArtistsWithLimit(Timestamp.fromDate(artistDate), 8)
-
-  const releaseDate = new Date()
-  releaseDate.setDate(releaseDate.getDate() - 8)
-  releases.value = await fetchReleasesWithDateAndLimit(Timestamp.fromDate(releaseDate), 8)
+  await getRandomMusics()
+  await getTodayComebacks()
+  await getLastRelease()
+  await getLastArtistAdded()
 })
-
-const newsFetching = () => {
-  const newsDate = new Date()
-  newsDate.setDate(newsDate.getDate() - 1)
-  const q = query(collection(db as any, 'news'), where('date', '>=', Timestamp.fromDate(newsDate)), orderBy('date', 'asc'))
-  onSnapshot(q, (querySnapshot) => {
-    const newsTmp: any[] = []
-    querySnapshot.forEach((doc) => {
-      newsTmp.push(doc.data())
-    })
-    news.value = newsTmp
-    newsFetched.value = true
-  })
-}
 
 useHead({
   title: 'Comeback',
@@ -61,7 +152,8 @@ useHead({
     {
       hid: 'description',
       name: 'description',
-      content: "Don't miss any Comeback. Track every next release by your favorite artists.",
+      content:
+        "Don't miss any Comeback. Track every next release by your favorite artists.",
     },
     {
       hid: 'og:site_name',
@@ -81,7 +173,8 @@ useHead({
     {
       hid: 'og:description',
       property: 'og:description',
-      content: "Don't miss any Comeback. Track every next release by your favorite artists.",
+      content:
+        "Don't miss any Comeback. Track every next release by your favorite artists.",
     },
     {
       hid: 'og:url',
@@ -105,12 +198,16 @@ useHead({
 </script>
 
 <template>
-  <div>
-    {{ GRAPHQL_ENDPOINT }}
-    <!-- <section v-if="newsToday.length && newsFetched">
+  <div class="container p-5">
+    <p>Hello World {{ newsToday.length }}</p>
+    <section v-if="newsToday.length">
       <div class="relative">
         <div class="absolute z-10 pt-10">
-          <p class="w-fit bg-red-700 py-1 pl-8 pr-5 text-xs font-semibold uppercase drop-shadow-lg lg:text-xl xl:text-2xl">Comeback Today</p>
+          <p
+            class="w-fit bg-red-700 py-1 pl-8 pr-5 text-xs font-semibold uppercase drop-shadow-lg lg:text-xl xl:text-2xl"
+          >
+            Comeback Today
+          </p>
         </div>
 
         <Swiper
@@ -123,10 +220,22 @@ useHead({
             disableOnInteraction: false,
           }"
         >
-          <SwiperSlide v-for="news in newsToday" :key="news.id" class="swiper-slide relative">
-            <NuxtImg :src="news.artist.image" class="min-h-[20rem] w-full object-cover lg:max-h-[40rem]" />
-            <NuxtLink :to="`/artist/${news.artist.id}`" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-secondary/30 p-5">
-              <p class="self-center text-3xl font-bold lg:text-5xl xl:text-7xl 2xl:text-9xl">
+          <SwiperSlide
+            v-for="news in newsToday"
+            :key="news.id"
+            class="swiper-slide relative"
+          >
+            <NuxtImg
+              :src="news.artist.images[news.artist.images.length - 1]"
+              class="min-h-[20rem] w-full object-cover lg:max-h-[40rem]"
+            />
+            <NuxtLink
+              :to="`/artist/${news.artist.id}`"
+              class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-secondary/30 p-5"
+            >
+              <p
+                class="self-center text-3xl font-bold lg:text-5xl xl:text-7xl 2xl:text-9xl"
+              >
                 {{ news.artist.name }}
               </p>
             </NuxtLink>
@@ -134,27 +243,5 @@ useHead({
         </Swiper>
       </div>
     </section>
-    <section
-      v-else-if="newsFetched && !newsToday.length"
-      class="relative flex h-[calc(100vh-60px)] w-full flex-col justify-center bg-[url('https://www.blind-magazine.com/wp-content/uploads/2021/12/comment-photographier-un-concert-fr-1536x864.jpg.webp')] bg-cover bg-center bg-no-repeat text-center sm:min-h-[30rem] lg:max-h-[40rem]"
-    >
-      <div class="absolute inset-0 bg-black/60"></div>
-      <div class="z-10 space-y-1.5 xl:space-y-5">
-        <p class="text-[2rem] font-bold sm:text-[6vw] xl:text-7xl">
-          Don't miss any
-          <span class="text-primary">Comeback</span>
-        </p>
-        <p class="text-[3vw] xl:text-3xl">Track every next release by your favorite artists</p>
-      </div>
-      <p class="absolute bottom-20 left-0 right-0 md:hidden">
-        <icon-arrow-down class="mx-auto h-5 w-5 animate-bounce" />
-      </p>
-    </section>
-    <section class="container mx-auto space-y-16 px-10 py-16">
-      <DiscoverMusic class="animate__animated animate__zoomIn" />
-      <ComebackReported v-if="news.length && newsFetched" :news-t="news" />
-      <RecentReleases v-if="releases.length" :releases="releases" />
-      <ArtistAdded v-if="artists.length" :artists="artists" />
-    </section> -->
   </div>
 </template>
