@@ -9,6 +9,7 @@ const lastArtistAdded = ref<any[]>([])
 interface Artist {
   id: string
   name: string
+  type?: string
   images: string[]
 }
 
@@ -23,6 +24,7 @@ interface Release {
   id: string
   idYoutubeMusic: string
   name: string
+  type?: string
   date: string
   images: string[]
   artist: Artist
@@ -32,8 +34,8 @@ const getRandomMusics = async () => {
   const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_MUSICS_COUNT)
 
   if (data.value) {
+    // @ts-ignore
     const totalNumber = data.value.musics.meta.pagination.total - 1
-    // console.log('totalNumber', totalNumber)
     const randomNumbers: number[] = []
     while (randomNumbers.length < 5) {
       const randomNumber = Math.floor(Math.random() * totalNumber)
@@ -41,7 +43,6 @@ const getRandomMusics = async () => {
         randomNumbers.push(randomNumber)
       }
     }
-    // console.log('randomNumbers', randomNumbers)
 
     const songPromises = randomNumbers.map((randomNumber) => {
       return useAsyncQuery(gQuery.GRAPHQL_QUERY_GET_MUSICS_NUMBER, {
@@ -53,12 +54,12 @@ const getRandomMusics = async () => {
     const songResults = await Promise.all(songPromises)
 
     songResults.forEach((result) => {
-      // console.log('result', result.data.value)
+      // @ts-ignore
       if (result.data.value?.musics.data[0]) {
+        // @ts-ignore
         randomSongs.value.push(result.data.value.musics.data[0])
       }
     })
-    // console.log('randomSongs', randomSongs.value)
   }
 }
 
@@ -71,6 +72,7 @@ const getTodayComebacks = async () => {
     },
   })
   if (data.value) {
+    // @ts-ignore
     data.value.comebacks.data.map((comeback: any) => {
       formatComebackObject(comeback).then((cb) => {
         newsToday.value.push(cb)
@@ -83,6 +85,7 @@ const getLastRelease = async () => {
   // TODO: get last release
   const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_LATEST_RELEASE)
   if (data.value) {
+    // @ts-ignore
     data.value.releases.data.map((release: any) => {
       formatReleaseObject(release).then((r) => {
         lastRelease.value.push(r)
@@ -92,7 +95,15 @@ const getLastRelease = async () => {
 }
 
 const getLastArtistAdded = async () => {
-  // TODO: get last artist added
+  const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_LATEST_ARTIST_CREATE)
+  if (data.value) {
+    // @ts-ignore
+    data.value.artists.data.map((artist: any) => {
+      formatArtistObject(artist).then((a) => {
+        lastArtistAdded.value.push(a)
+      })
+    })
+  }
 }
 
 const formatComebackObject = async (comeback: any) => {
@@ -116,6 +127,7 @@ const formatReleaseObject = async (release: any) => {
   r.id = release.id
   r.idYoutubeMusic = release.attributes.idYoutubeMusic
   r.name = release.attributes.name
+  r.type = release.attributes.type
   r.date = release.attributes.dateRelease
   r.images = release.attributes.images
   r.artist = {
@@ -125,6 +137,17 @@ const formatReleaseObject = async (release: any) => {
   }
 
   return r
+}
+
+const formatArtistObject = async (artist: any) => {
+  let a = {} as Artist
+
+  a.id = artist.id
+  a.name = artist.attributes.name
+  a.images = artist.attributes.images
+  a.type = artist.attributes.type
+
+  return a
 }
 
 onMounted(async () => {
@@ -198,50 +221,36 @@ useHead({
 </script>
 
 <template>
-  <div class="container p-5">
-    <p>Hello World {{ newsToday.length }}</p>
-    <section v-if="newsToday.length">
-      <div class="relative">
-        <div class="absolute z-10 pt-10">
-          <p
-            class="w-fit bg-red-700 py-1 pl-8 pr-5 text-xs font-semibold uppercase drop-shadow-lg lg:text-xl xl:text-2xl"
-          >
-            Comeback Today
-          </p>
-        </div>
-
-        <Swiper
-          :modules="[SwiperAutoplay, SwiperParallax]"
-          :slides-per-view="1"
-          :loop="true"
-          :parallax="true"
-          :autoplay="{
-            delay: 3500,
-            disableOnInteraction: false,
-          }"
-        >
-          <SwiperSlide
-            v-for="news in newsToday"
-            :key="news.id"
-            class="swiper-slide relative"
-          >
-            <NuxtImg
-              :src="news.artist.images[news.artist.images.length - 1]"
-              class="min-h-[20rem] w-full object-cover lg:max-h-[40rem]"
-            />
-            <NuxtLink
-              :to="`/artist/${news.artist.id}`"
-              class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-secondary/30 p-5"
-            >
-              <p
-                class="self-center text-3xl font-bold lg:text-5xl xl:text-7xl 2xl:text-9xl"
-              >
-                {{ news.artist.name }}
-              </p>
-            </NuxtLink>
-          </SwiperSlide>
-        </Swiper>
+  <div class="container mx-auto space-y-5 lg:p-5">
+    <ComebackSlider :newsToday="newsToday" />
+    <div class="space-y-5 py-8">
+      <p class="text-2xl font-bold">Artist Recently Added</p>
+      <div
+        class="remove-scrollbar flex gap-2 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between"
+      >
+        <CardObject
+          v-for="artist in lastArtistAdded"
+          :key="artist.id"
+          :mainTitle="artist.name"
+          :subTitle="artist.type == 'SOLO' ? 'Soloist' : 'Group'"
+          :image="artist.images[0]"
+          isArtist
+        />
       </div>
-    </section>
+    </div>
+    <div class="space-y-5 py-8">
+      <p class="text-2xl font-bold">Artist Recently Added</p>
+      <div
+        class="remove-scrollbar flex gap-2 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between"
+      >
+        <CardObject
+          v-for="release in lastRelease"
+          :key="release.id"
+          :mainTitle="release.name"
+          :subTitle="release.artist.name"
+          :image="release.images[release.images.length - 1]"
+        />
+      </div>
+    </div>
   </div>
 </template>

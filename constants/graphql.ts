@@ -9,6 +9,7 @@ export const GRAPHQL_QUERY_LATEST_ARTIST_CREATE = gql`
           images
           idYoutubeMusic
           createdAt
+          type
         }
         id
       }
@@ -23,6 +24,7 @@ export const GRAPHQL_QUERY_LATEST_RELEASE = gql`
         id
         attributes {
           name
+          type
           images
           dateRelease
           year
