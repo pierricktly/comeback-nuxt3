@@ -221,12 +221,16 @@ useHead({
 </script>
 
 <template>
-  <div class="container mx-auto space-y-5 lg:p-5">
+  <div class="container mx-auto space-y-12 lg:px-5 lg:py-10">
     <ComebackSlider :newsToday="newsToday" />
-    <div class="space-y-5 py-8">
-      <p class="text-2xl font-bold">Artist Recently Added</p>
-      <div
-        class="remove-scrollbar flex gap-2 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between"
+
+    <div
+      v-if="lastArtistAdded.length"
+      class="animate__animated animate__fadeInUp space-y-5"
+    >
+      <p class="text-2xl font-bold">Artist Added</p>
+      <section
+        class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
       >
         <CardObject
           v-for="artist in lastArtistAdded"
@@ -234,23 +238,29 @@ useHead({
           :mainTitle="artist.name"
           :subTitle="artist.type == 'SOLO' ? 'Soloist' : 'Group'"
           :image="artist.images[0]"
+          :object-link="`/artist/${artist.id}`"
           isArtist
         />
-      </div>
+      </section>
     </div>
-    <div class="space-y-5 py-8">
-      <p class="text-2xl font-bold">Artist Recently Added</p>
-      <div
-        class="remove-scrollbar flex gap-2 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between"
+
+    <div
+      v-if="lastArtistAdded.length && lastRelease.length"
+      class="animate__animated animate__fadeInUp space-y-5"
+    >
+      <p class="text-2xl font-bold">Recent Releases</p>
+      <section
+        class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
       >
         <CardObject
           v-for="release in lastRelease"
           :key="release.id"
           :mainTitle="release.name"
           :subTitle="release.artist.name"
-          :image="release.images[release.images.length - 1]"
+          :image="release.images[2]"
+          :object-link="`/release/${release.id}`"
         />
-      </div>
+      </section>
     </div>
   </div>
 </template>

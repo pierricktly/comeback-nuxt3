@@ -1,8 +1,13 @@
+@import 'multiselect.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import 'multiselect.css';
+body::-webkit-scrollbar {
+  display: none;
+}
+
 
 .remove-scrollbar::-webkit-scrollbar {
   display: none;
