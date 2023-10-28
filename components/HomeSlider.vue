@@ -1,5 +1,5 @@
 <template>
-  <div class="relative rounded">
+  <div class="relative overflow-hidden rounded">
     <div
       class="absolute inset-0 min-h-[40rem] w-full bg-primary object-cover transition-all duration-500 ease-in-out lg:aspect-video lg:max-h-[40rem]"
       :class="imageLoaded ? 'opacity-0' : 'opacity-100'"

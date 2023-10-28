@@ -114,3 +114,152 @@ export const GRAPHQL_QUERY_GET_TODAY_COMEBACK = gql`
     }
   }
 `
+
+export const GRAPHQL_QUERY_GET_ARTIST_BY_ID = gql`
+  query Artist($artistId: ID) {
+    artist(id: $artistId) {
+      data {
+        id
+        attributes {
+          name
+          idYoutubeMusic
+          description
+          type
+          verified
+          styles
+          socials
+          platforms
+          images
+          members {
+            data {
+              id
+              attributes {
+                name
+                type
+                images
+              }
+            }
+          }
+          groups {
+            data {
+              id
+              attributes {
+                name
+                type
+                images
+              }
+            }
+          }
+          releases {
+            data {
+              id
+              attributes {
+                name
+                dateRelease
+                images
+                type
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
+export const GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT = gql`
+  query Artist($artistId: ID) {
+    artist(id: $artistId) {
+      data {
+        id
+        attributes {
+          name
+          idYoutubeMusic
+          description
+          type
+          verified
+          styles
+          socials
+          platforms
+          images
+          members {
+            data {
+              id
+              attributes {
+                name
+                type
+                images
+              }
+            }
+          }
+          groups {
+            data {
+              id
+              attributes {
+                name
+                type
+                images
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
+export const GRAPHQL_QUERY_GET_ALL_ARTISTS = gql`
+  query Query {
+    artists(sort: "name:asc", pagination: { pageSize: 1000 }) {
+      data {
+        id
+        attributes {
+          name
+          images
+          idYoutubeMusic
+          type
+        }
+      }
+    }
+  }
+`
+
+export const GRAPHQL_MUTATION_UPDATE_ARTIST = gql`
+  mutation Mutation($data: ArtistInput!, $updateArtistId: ID!) {
+    updateArtist(data: $data, id: $updateArtistId) {
+      data {
+        id
+        attributes {
+          name
+          idYoutubeMusic
+          images
+          description
+          type
+          styles
+          platforms
+          socials
+          groups {
+            data {
+              id
+              attributes {
+                name
+                images
+                type
+              }
+            }
+          }
+          members {
+            data {
+              id
+              attributes {
+                name
+                images
+                type
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`

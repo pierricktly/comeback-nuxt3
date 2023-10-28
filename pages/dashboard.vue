@@ -2,7 +2,7 @@
 const routeN = useRoute()
 </script>
 
-<template>
+<!-- <template>
   <div class="px-5">
     <nav class="container mx-auto flex flex-wrap items-center justify-center space-x-10 border-b border-zinc-700 p-3 text-center">
       <NuxtLink
@@ -50,4 +50,4 @@ const routeN = useRoute()
     </nav>
     <NuxtPage class="container mx-auto min-h-screen w-full py-3 lg:p-3" />
   </div>
-</template>
+</template> -->

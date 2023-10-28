@@ -36,7 +36,7 @@
     </section>
     <section
       v-else
-      class="relative flex min-h-[20rem] w-full flex-col justify-center rounded bg-[url('/public/slider-placeholder.webp')] bg-cover bg-center bg-no-repeat object-cover text-center lg:aspect-video lg:max-h-[40rem]"
+      class="relative flex min-h-[20rem] w-full flex-col justify-center overflow-hidden rounded bg-[url('/public/slider-placeholder.webp')] bg-cover bg-center bg-no-repeat object-cover text-center lg:aspect-video lg:max-h-[40rem]"
     >
       <div class="absolute inset-0 bg-black/60"></div>
       <div class="z-10 space-y-1.5 xl:space-y-5">

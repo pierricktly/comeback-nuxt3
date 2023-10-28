@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import { Timestamp } from 'firebase/firestore'
 const releases = ref(null)
 const currentYear = ref(
@@ -81,10 +81,10 @@ useHead({
     },
   ],
 })
-</script>
+</script> -->
 
 <template>
-  <div
+  <!-- <div
     class="container mx-auto min-h-screen space-y-5 p-5"
   >
     <div
@@ -203,7 +203,7 @@ useHead({
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <style scoped>

@@ -1,134 +1,93 @@
 <template>
-  <NuxtLink v-if="href" rel="noopener" :to="checkUrl()" target="_blank"
-    class="flex items-center md:space-x-2 md:px-3 md:py-2 transition-all duration-300 ease-in-out hover:bg-secondary hover:drop-shadow-2xl">
-    <component :is="icon" class="h-5 w-5" />
-    <p class="hidden md:block">{{ text }}</p>
+  <NuxtLink
+    :aria-label="`${name}'s link`"
+    rel="noopener"
+    :to="link"
+    target="_blank"
+    class="flex h-fit w-fit items-center gap-2 rounded bg-quaternary px-3.5 py-2.5 text-sm hover:bg-quinary"
+  >
+    <NuxtImg :src="icon" :alt="name" class="h-5 w-5" />
+    <p class="hidden md:block">{{ name }}</p>
   </NuxtLink>
 </template>
 
 <script setup>
-const icon = shallowRef(null)
-const text = shallowRef(null)
-
-const { href } = defineProps({
-  href: {
+const { link, name } = defineProps({
+  name: {
+    type: String,
+    required: true,
+  },
+  link: {
     type: String,
     required: true,
   },
 })
 
-onMounted(() => {
-  selectIcon()
+const icon = computed(() => {
+  if (link.includes('youtube') && link.includes('music.')) {
+    return '../public/youtube_music.png'
+  } else if (link.includes('youtube')) {
+    return '../public/youtube.png'
+  } else if (link.includes('apple') && link.includes('music')) {
+    return '../public/apple_music.png'
+  } else if (link.includes('spotify')) {
+    return '../public/spotify.png'
+  } else if (link.includes('tidal')) {
+    return '../public/tidal.png'
+  } else if (link.includes('soundcloud')) {
+    return '../public/sound_cloud.png'
+  } else if (link.includes('facebook')) {
+    return '../public/facebook.png'
+  } else if (link.includes('instagram')) {
+    return '../public/instagram.png'
+  } else if (link.includes('twitter') || link.includes('x.com')) {
+    return '../public/x.png'
+  } else if (link.includes('tiktok')) {
+    return '../public/tiktok.png'
+  } else if (link.includes('snapchat')) {
+    return '../public/snapchat.png'
+  } else if (link.includes('weibo')) {
+    return '../public/weibo.png'
+  } else if (link.includes('deezer')) {
+    return '../public/deezer.png'
+  } else {
+    return '../public/default.png'
+  }
 })
 
-function checkUrl() {
-  if (href.includes('https')) {
-    return href
-  } else {
-    return `https://${href}`
-  }
-}
+// onMounted(() => {
+//   selectIcon()
+// })
 
-function selectIcon() {
-  if (href.includes('youtube') && href.includes('music.')) {
-    icon.value = resolveComponent('icon-youtube-music')
-    text.value = 'Youtube Music'
-  } else if (href.includes('youtube')) {
-    icon.value = resolveComponent('icon-youtube')
-    text.value = 'Youtube'
-  } else if (href.includes('apple') && href.includes('music')) {
-    icon.value = resolveComponent('icon-apple-music')
-    text.value = 'Apple Music'
-  } else if (href.includes('spotify')) {
-    icon.value = resolveComponent('icon-spotify')
-    text.value = 'Spotify'
-  } else if (href.includes('tidal')) {
-    icon.value = resolveComponent('icon-tidal')
-    text.value = 'Tidal'
-  } else if (href.includes('soundcloud')) {
-    icon.value = resolveComponent('icon-soundcloud')
-    text.value = 'Soundcloud'
-  } else if (href.includes('facebook')) {
-    icon.value = resolveComponent('icon-facebook')
-    text.value = 'Facebook'
-  } else if (href.includes('instagram')) {
-    icon.value = resolveComponent('icon-instagram')
-    text.value = 'Instagram'
-  } else if (href.includes('twitter')) {
-    icon.value = resolveComponent('icon-twitter')
-    text.value = 'Twitter'
-  } else if (href.includes('tiktok')) {
-    icon.value = resolveComponent('icon-tiktok')
-    text.value = 'Tiktok'
-  } else if (href.includes('snapchat')) {
-    icon.value = resolveComponent('icon-snapchat')
-    text.value = 'Snapchat'
-  } else if (href.includes('weibo')) {
-    icon.value = resolveComponent('icon-weibo')
-    text.value = 'Weibo'
-  } else {
-    icon.value = resolveComponent('icon-unknow')
-    text.value = extractRootDomain(href)
-  }
-}
+// const icon = ref('')
 
-function extractRootDomain(url) {
-  let domain = extractHostname(url)
-  const splitArr = domain.split('.')
-  const arrLen = splitArr.length
-  // extracting the root domain here
-  // if there is a subdomain
-  if (arrLen > 2) {
-    domain = splitArr[arrLen - 2] + '.' + splitArr[arrLen - 1]
-    // check to see if it's using a Country Code Top Level Domain (ccTLD) (i.e. ".me.uk")
-    if (
-      splitArr[arrLen - 2].length === 2 &&
-      splitArr[arrLen - 1].length === 2
-    ) {
-      // this is using a ccTLD
-      domain = splitArr[arrLen - 3] + '.' + domain
-    }
-  }
-  // remove '.com'
-  const n = domain.indexOf('.')
-  domain = domain.substring(0, n !== -1 ? n : domain.length)
-  // Uppercase first letter
-  let x = domain.charAt(0).toUpperCase() + domain.slice(1)
-  if (x === 'Qq') {
-    x = domain.toUpperCase()
-  }
-  if (
-    x === 'Youtube' ||
-    x === 'Apple' ||
-    x === 'Huawei' ||
-    x === 'Amazon' ||
-    x === 'Line' ||
-    x === 'QQ' ||
-    x === 'Stingray'
-  ) {
-    x = x + ' Music'
-  }
-  if (url.includes('www.youtube')) {
-    x = 'Youtube'
-  }
-  return x
-}
-
-function extractHostname(url) {
-  let hostname
-  // find & remove protocol (http, ftp, etc.) and get hostname
-
-  if (url.includes('//')) {
-    hostname = url.split('/')[2]
-  } else {
-    hostname = url.split('/')[0]
-  }
-
-  // find & remove port number
-  hostname = hostname.split(':')[0]
-  // find & remove "?"
-  hostname = hostname.split('?')[0]
-
-  return hostname
-}
+// function selectIcon() {
+//   if (link.includes('youtube') && link.includes('music.')) {
+//     icon.value = '../public/youtube_music.png'
+//   } else if (link.includes('youtube')) {
+//     icon.value = '../public/youtube.png'
+//   } else if (link.includes('apple') && link.includes('music')) {
+//     icon.value = '../public/apple_music.png'
+//   } else if (link.includes('spotify')) {
+//     icon.value = '../public/spotify.png'
+//   } else if (link.includes('tidal')) {
+//     icon.value = '../public/tidal.png'
+//   } else if (link.includes('soundcloud')) {
+//     icon.value = '../public/sound_cloud.png'
+//   } else if (link.includes('facebook')) {
+//     icon.value = '../public/facebook.png'
+//   } else if (link.includes('instagram')) {
+//     icon.value = '../public/instagram.png'
+//   } else if (link.includes('twitter') || link.includes('x.com')) {
+//     icon.value = '../public/x.png'
+//   } else if (link.includes('tiktok')) {
+//     icon.value = '../public/tiktok.png'
+//   } else if (link.includes('snapchat')) {
+//     icon.value = '../public/snapchat.png'
+//   } else if (link.includes('weibo')) {
+//     icon.value = '../public/weibo.png'
+//   } else {
+//     icon.value = '../public/default.png'
+//   }
+// }
 </script>

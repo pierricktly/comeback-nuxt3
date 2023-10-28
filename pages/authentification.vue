@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { UserCredential } from '@firebase/auth';
 const router = useRouter();
 
@@ -37,10 +37,10 @@ useHead({
     content: 'Authentification'
   }]
 })
-</script>
+</script> -->
 
 <template>
-  <div class="sm:min-h-[calc(100vh-60px)] flex items-center p-5">
+  <!-- <div class="sm:min-h-[calc(100vh-60px)] flex items-center p-5">
     <div class="space-y-5 mx-auto rounded p-5 h-fit bg-quaternary w-full md:w-1/2 lg:w-1/3">
       <div>
         <img src="~/assets/image/logo.png" alt="Comeback" class="block mx-auto h-20" />
@@ -116,5 +116,5 @@ useHead({
         </button>
       </div>
     </div>
-  </div>
+  </div> -->
 </template>

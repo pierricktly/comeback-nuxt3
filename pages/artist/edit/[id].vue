@@ -1,351 +1,382 @@
-<script setup>
-import * as fire from 'firebase/storage'
+<script setup lang="ts">
+import {
+  GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT,
+  GRAPHQL_QUERY_GET_ALL_ARTISTS,
+  GRAPHQL_MUTATION_UPDATE_ARTIST,
+} from '@/constants/graphql'
 import VueMultiselect from 'vue-multiselect'
-import { Timestamp } from 'firebase/firestore';
-import { useToast } from "vue-toastification";
+import _ from 'lodash'
 
-definePageMeta({
-  middleware: 'admin'
-})
+interface Artist {
+  id: string
+  idYoutubeMusic: string
+  name: string
+  description: string
+  type: string
+  images: string[]
+  styles: string[]
+  socials: Object
+  platforms: Object
+  members: any[]
+  groups: any[]
+  releases: Release[]
+}
 
-const title = ref('Edit Artist Page')
-const description = ref('Edit Artist Page')
+interface Release {
+  id: string
+  name: string
+  type: string
+  date: string
+  images: string[]
+}
+
+// Original Data
+const artistGQ = ref<Artist>({} as Artist)
+// Data to edit
+const artistToEdit = ref<Artist>({} as Artist)
+// List of artists
+const artistList = ref(null)
+// List of styles
+const stylesList = ref(null)
+const isUploadingEdit = ref(false)
 const route = useRoute()
 
-const toast = useToast();
-const toastOption = {
-  position: 'top-right',
-  timeout: 5000,
-  closeOnClick: true,
-  pauseOnFocusLoss: false,
-  pauseOnHover: true,
-  draggable: true,
-  draggablePercent: 0.6,
-  showCloseButtonOnHover: false,
-  hideProgressBar: false,
-  closeButton: 'button',
-  icon: true,
-  rtl: false,
-  transition: 'Vue-Toastification__bounce',
-  maxToasts: 5,
-  newestOnTop: true,
-}
-const isUploadingImage = ref(false)
-const isUploadingEdit = ref(false)
-const artist = ref(null)
-const groupList = ref(null)
-const membersList = ref(null)
-const artistList = ref(null)
-const stylesList = ref(null)
-const artistToEdit = ref({
-  id: '',
-  idYoutubeMusic: '',
-  name: '',
-  type: '',
-  description: '',
-  image: '',
-  platforms: [],
-  socials: [],
-  styles: [],
-  groups: [],
-  members: []
+// Get artist data from graphql
+const { data }: any = await useAsyncQuery(GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT, {
+  artistId: route.params.id,
+}).catch((error) => {
+  console.log(error)
 })
 
-const uploadImageFile = async (files) => {
-  // verify if files exist
-  if (!files.length) return
+const { data: dataAllArtists }: any = await useAsyncQuery(
+  GRAPHQL_QUERY_GET_ALL_ARTISTS,
+).catch((error) => {
+  console.log(error)
+})
 
-  isUploadingImage.value = true
-  const file = files[0]
-  const storageRef = ref(null)
-  const fileRef = ref(null)
-  const downloadUrl = ref(null)
-  const storage = fire.getStorage()
-  const metadata = {
-    contentType: file.type,
+const { mutate } = useMutation(GRAPHQL_MUTATION_UPDATE_ARTIST)
+
+const formatArtistData = async () => {
+  const artistTmp = ref<Artist>({} as Artist)
+  if (data.value) {
+    artistTmp.value.id = data.value.artist.data.id
+    artistTmp.value.idYoutubeMusic =
+      data.value.artist.data.attributes.idYoutubeMusic || ''
+    artistTmp.value.name = data.value.artist.data.attributes.name
+    artistTmp.value.description = data.value.artist.data.attributes.description || ''
+    artistTmp.value.type = data.value.artist.data.attributes.type
+    artistTmp.value.images = data.value.artist.data.attributes.images
+    artistTmp.value.styles = data.value.artist.data.attributes.styles || []
+    artistTmp.value.socials = data.value.artist.data.attributes.socials || []
+    artistTmp.value.platforms = data.value.artist.data.attributes.platforms || []
+    if (data.value.artist.data.attributes.members) {
+      //for each member use formatMiniArtistObject to have a list in artistTmp.value.members
+      artistTmp.value.members = await Promise.all(
+        data.value.artist.data.attributes.members?.data.map(async (member: any) => {
+          return await formatMiniArtistObject(member)
+        }),
+      )
+    }
+    if (data.value.artist.data.attributes.groups) {
+      //for each group use formatMiniArtistObject to have a list in artistTmp.value.groups
+      artistTmp.value.groups = await Promise.all(
+        data.value.artist.data.attributes.groups?.data.map(async (group: any) => {
+          return await formatMiniArtistObject(group)
+        }),
+      )
+    }
   }
+  return artistTmp.value
+}
 
-  storageRef.value = fire.ref(storage, `images/artist/${new Date()}`)
+const formatMiniArtistObject = async (artist: any) => {
+  let a = {} as Artist
 
-  fire.uploadBytes(storageRef.value, file, metadata)
-    .then(async (snapshot) => {
-      fileRef.value = snapshot.ref
-      downloadUrl.value = await fire.getDownloadURL(fileRef.value)
-      artistToEdit.value.image = downloadUrl.value
-      isUploadingImage.value = false
-      toast.success('Image Upload', toastOption)
-    })
-    .catch((error) => {
-      console.error('error', error)
-      isUploadingImage.value = false
-      toast.warning('Image Upload Failed', toastOption)
-    })
+  a.id = artist.id
+  a.name = artist.attributes.name
+  a.images = artist.attributes.images
+  a.type = artist.attributes.type
+
+  return a
+}
+
+const compareFields = (field1: any, field2: any) => {
+  return _.isEqual(field1, field2)
 }
 
 const updateArtist = async () => {
-  isUploadingEdit.value = true
-  // verify each field from artistToEdit is not equal to artist's field
-  if (artistToEdit.value.name == artist.value.name &&
-    artistToEdit.value.idYoutubeMusic == artist.value.idYoutubeMusic &&
-    artistToEdit.value.type == artist.value.type &&
-    artistToEdit.value.description == artist.value.description &&
-    artistToEdit.value.image == artist.value.image &&
-    artistToEdit.value.platforms == artist.value.platforms &&
-    artistToEdit.value.socials == artist.value.socials &&
-    artistToEdit.value.styles == artist.value.styles &&
-    artistToEdit.value.groups == artist.value.groups &&
-    artistToEdit.value.members == artist.value.members
-  ) {
-    console.log('No changes')
-    isUploadingEdit.value = false
+  // isUploadingEdit.value = true
+  const updatedFields: Partial<Artist> = {}
+
+  Object.keys(artistToEdit.value).forEach((key) => {
+    if (!compareFields(artistToEdit.value[key], artistGQ.value[key])) {
+      updatedFields[key] = artistToEdit.value[key]
+    }
+  })
+
+  // if artistToEdit doesn't have any field to update then return
+  if (Object.keys(artistToEdit.value).length == 0) {
+    console.log('artistToEdit', artistToEdit.value)
     return
   }
 
-  if (artistToEdit.value.name == artist.value.name) {
-    delete artistToEdit.value.name
-  }
-
-  if (artistToEdit.value.idYoutubeMusic == artist.value.idYoutubeMusic) {
-    delete artistToEdit.value.idYoutubeMusic
-  }
-
-  if (artistToEdit.value.type == artist.value.type) {
-    delete artistToEdit.value.type
-  }
-
-  if (artistToEdit.value.description == artist.value.description) {
-    delete artistToEdit.value.description
-  }
-
-  if (artistToEdit.value.image == artist.value.image) {
-    delete artistToEdit.value.image
-  }
-
-  if (artistToEdit.value.platforms.length == artist.value.platforms.length) {
-    let isSame = true
-    artistToEdit.value.platforms.forEach(platform => {
-      if (!artist.value.platforms.includes(platform)) {
-        isSame = false
-      }
+  if (updatedFields.groups) {
+    let groupsTmp: string[] = []
+    updatedFields.groups.map((group: Artist) => {
+      groupsTmp.push(group.id)
     })
-    if (isSame) {
-      delete artistToEdit.value.platforms
-    }
+    console.log('groupsTmp', groupsTmp)
+    updatedFields.groups = groupsTmp
   }
 
-  if (artistToEdit.value.socials.length == artist.value.socials.length) {
-    let isSame = true
-    artistToEdit.value.socials.forEach(social => {
-      if (!artist.value.socials.includes(social)) {
-        isSame = false
-      }
+  if (updatedFields.members) {
+    let membersTmp: string[] = []
+    updatedFields.members.map((member: Artist) => {
+      membersTmp.push(member.id)
     })
-    if (isSame) {
-      delete artistToEdit.value.socials
-    }
+    console.log('membersTmp', membersTmp)
+    updatedFields.members = membersTmp
   }
 
-  if (artistToEdit.value.styles.length == artist.value.styles.length) {
-    let isSame = true
-    artistToEdit.value.styles.forEach(style => {
-      if (!artist.value.styles.includes(style)) {
-        isSame = false
-      }
-    })
-    if (isSame) {
-      delete artistToEdit.value.styles
-    }
-  }
-
-  if (artistToEdit.value.groups.length == artist.value.groups.length) {
-    let isSame = true
-    artistToEdit.value.groups.forEach(group => {
-      if (!artist.value.groups.includes(group)) {
-        isSame = false
-      }
-    })
-    if (isSame) {
-      delete artistToEdit.value.groups
-    }
-  }
-
-  if (artistToEdit.value.members.length == artist.value.members.length) {
-    let isSame = true
-    artistToEdit.value.members.forEach(member => {
-      if (!artist.value.members.includes(member)) {
-        isSame = false
-      }
-    })
-    if (isSame) {
-      delete artistToEdit.value.members
-    }
-  }
-
-  const today = new Date()
-  today.setDate(today.getDate())
-  const todayTimestamp = Timestamp.fromDate(today)
-  artistToEdit.value.updatedAt = todayTimestamp
-
-  add('updateArtistPending', artistToEdit.value).then(() => {
-    console.log('Document successfully written!')
-    isUploadingEdit.value = false
-    toast.success('Artist Update', toastOption)
-  }).catch((error) => {
-    console.error('Error writing document: ', error)
-    toast.warning('Artist Update Failed', toastOption)
+  const response = await mutate({
+      data: updatedFields,
+      updateArtistId: route.params.id,
+  })
+  .then((response) => {
+    console.log(response)
+    // isUploadingEdit.value = false
+    // redirect to artist page
+  const router = useRouter()
+    router.push(`/artist/${route.params.id}`)
+  })
+  .catch((error) => {
+    console.log(error)
   })
 }
 
 onMounted(async () => {
-  artist.value = await fetchArtistBasicInfoById(route.params.id)
-  artistToEdit.value = await fetchArtistBasicInfoById(route.params.id)
+  // fetch data
+  artistGQ.value = await formatArtistData()
+  artistToEdit.value = _.cloneDeep(await formatArtistData())
 
-  title.value = 'EDIT ARTIST : ' + artist.value.name
-  description.value = artist.value.description
-
-  artistList.value = await queryByCollection('artists')
-  groupList.value = artistList.value.filter(artist => artist.type == 'GROUP')
-  membersList.value = artistList.value.filter(artist => artist.type == 'SOLO')
-
-  stylesList.value = await queryByCollection('general')
-  stylesList.value = stylesList.value[0].styles
-})
-
-useHead({
-  title,
-  meta: [{
-    name: 'description',
-    content: description
-  }]
+  if (dataAllArtists.value) {
+    artistList.value = await Promise.all(
+      dataAllArtists.value.artists.data.map(async (member: any) => {
+        return await formatMiniArtistObject(member)
+      }),
+    )
+    // remove artistGQ from artistList
+    if (artistList.value) {
+      artistList.value = artistList.value?.filter((artist: Artist) => {
+        return artist.id != artistGQ.value.id
+      })
+    }
+  }
 })
 </script>
 
 <template>
-  <div v-if="artist" class="container mx-auto p-5 lg:px-10 min-h-[calc(100vh-60px)] space-y-5">
-    <p class="text-lg lg:text-xl font-semibold uppercase border-b border-zinc-700 pb-1">
-      Artist Edition : {{ artistToEdit.name }}
-    </p>
+  <div class="container mx-auto min-h-[calc(100vh-60px)] space-y-5 p-5 lg:px-10">
+    <div
+      class="flex items-center gap-2 border-b border-zinc-700 pb-1 text-lg font-semibold uppercase lg:text-xl"
+    >
+      <p>Artist Edition :</p>
+      <p v-if="artistGQ.name">{{ artistGQ.name }}</p>
+      <Skeleton v-else class="h-5 w-40 rounded" />
+    </div>
+
     <div class="space-y-5">
       <!-- Picture -->
-      <div class="flex flex-col gap-2">
-        <CbLabel label="Image" />
-        <div class="space-y-5">
-          <nuxt-img v-if="artistToEdit.image" :src="artistToEdit.image" :alt="artistToEdit.name" quality="80" loading="lazy"
-            class="w-full rounded object-cover md:w-auto md:max-w-lg xl:max-w-xl" />
-          <div>
-            <input ref="imageFile" type="file" accept="image/png, image/jpeg"
-              class="cursor-pointer relative m-0 block w-full min-w-0 flex-auto border-b border-solid hover:bg-tertiary border-neutral-300 bg-clip-padding px-3 py-[0.32rem] text-base font-normal text-neutral-700 transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-neutral-100 file:px-3 file:py-[0.32rem] file:text-neutral-700 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] focus:text-neutral-700 focus:shadow-te-primary focus:outline-none"
-              @change.prevent="uploadImageFile($event.target.files)" />
-            <p id="file_input_help" class="text-sm text-gray-500 dark:text-gray-300">
-              PNG or JPG.
-            </p>
-          </div>
-        </div>
+      <div>
+        <NuxtImg
+          v-if="artistGQ.images"
+          :src="artistGQ.images[artistGQ.images.length - 1]"
+          :alt="artistGQ.name"
+          class="h-80 w-full rounded object-cover"
+        />
+        <Skeleton v-else class="h-80 w-full rounded" />
       </div>
       <!-- Name & Id -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <CbInput label="Name" :placeholder="artist.name" v-model="artistToEdit.name" />
-        <CbInput label="Unique Id" :placeholder="artist.id" v-model="artistToEdit.id" disabled />
+      <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <CbInput
+          v-if="artistToEdit.name"
+          label="Name"
+          :placeholder="artistGQ.name"
+          v-model="artistToEdit.name"
+        />
+        <Skeleton v-else class="h-10 w-full rounded" />
+        <CbInput
+          v-if="artistToEdit.id"
+          label="Unique Id"
+          :placeholder="artistGQ.id"
+          v-model="artistToEdit.id"
+          disabled
+        />
+        <Skeleton v-else class="h-10 w-full rounded" />
       </div>
       <!-- Id YTM & Type -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <CbInput label="Id Youtube Music" :placeholder="artist.idYoutubeMusic" v-model="artistToEdit.idYoutubeMusic" />
-        <div class="grid grid-cols-1 gap-1">
+      <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <CbInput
+          v-if="artistToEdit.idYoutubeMusic"
+          label="Id Youtube Music"
+          :placeholder="artistGQ.idYoutubeMusic"
+          v-model="artistToEdit.idYoutubeMusic"
+        />
+        <Skeleton v-else class="h-10 w-full rounded" />
+        <div v-if="artistToEdit.type" class="space-y-1">
           <CbLabel label="Type" />
-          <select v-model="artistToEdit.type"
-            class="bg-transparent border-b appearance-none focus:outline-none hover:cursor-pointer">
-            <option value="SOLO" class="text-secondary">
-              SOLO
-            </option>
-            <option value="GROUP" class="text-secondary">
-              GROUP
-            </option>
+          <select
+            v-model="artistToEdit.type"
+            class="w-full appearance-none border-b bg-transparent hover:cursor-pointer focus:outline-none"
+          >
+            <option value="SOLO" class="text-secondary">SOLO</option>
+            <option value="GROUP" class="text-secondary">GROUP</option>
           </select>
         </div>
+        <Skeleton v-else class="h-10 w-full rounded" />
       </div>
       <!-- Styles -->
-      <div v-if="stylesList" class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1">
         <CbLabel label="Styles" />
-        <VueMultiselect v-model="artistToEdit.styles" label="name" track-by="name" placeholder="Search or add a style"
-          :options="stylesList" :multiple="true" :close-on-select="false" :clear-on-select="false"
-          :preserve-search="false" />
+        <!-- <VueMultiselect
+          v-if="artistToEdit.styles"
+          v-model="artistToEdit.styles"
+          label="name"
+          track-by="name"
+          placeholder="Search or add a style"
+          :multiple="true"
+          :close-on-select="false"
+          :clear-on-select="false"
+          :preserve-search="false"
+        /> -->
       </div>
       <!-- Description -->
       <div class="flex flex-col gap-1">
         <CbLabel label="Description" />
         <textarea
-          :placeholder="artistToEdit.description || 'Description'" 
+          :placeholder="artistGQ.description || 'Description'"
           v-model="artistToEdit.description"
-          class="bg-transparent w-full min-h-full border-b appearance-none transition-all ease-in-out duration-150 focus:p-1.5 focus:outline-none focus:bg-tertiary focus:text-secondary focus:rounded"
+          class="min-h-full w-full appearance-none border-b bg-transparent transition-all duration-150 ease-in-out focus:rounded focus:bg-tertiary focus:p-1.5 focus:text-secondary focus:outline-none"
         />
       </div>
       <!-- Group -->
-      <div v-if="groupList" class="flex flex-col gap-1">
+      <div v-if="artistList" class="flex flex-col gap-1">
         <CbLabel label="Group" />
-        <VueMultiselect v-model="artistToEdit.groups" label="name" track-by="name" :options="groupList"
-          placeholder="Search or add a group" :multiple="true" :close-on-select="false" :clear-on-select="false"
-          :preserve-search="false" />
+        <VueMultiselect
+          v-model="artistToEdit.groups"
+          label="name"
+          track-by="name"
+          :options="artistList"
+          placeholder="Search or add a group"
+          :multiple="true"
+          :close-on-select="false"
+          :clear-on-select="false"
+          :preserve-search="false"
+        />
       </div>
       <!-- Members -->
-      <div v-if="membersList && artistToEdit.type != 'SOLO'" class="flex flex-col gap-1">
+      <div v-if="artistList" class="flex flex-col gap-1">
         <CbLabel label="Members" />
-        <VueMultiselect v-model="artistToEdit.members" label="name" track-by="name" :options="membersList"
-          placeholder="Search or add a member" :multiple="true" :close-on-select="false" :clear-on-select="false"
-          :preserve-search="false" />
+        <VueMultiselect
+          v-model="artistToEdit.members"
+          label="name"
+          track-by="name"
+          :options="artistList"
+          placeholder="Search or add a member"
+          :multiple="true"
+          :close-on-select="false"
+          :clear-on-select="false"
+          :preserve-search="false"
+        />
       </div>
-      <!-- Platforms & Socials -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <!-- Platforms -->
-        <div class="flex flex-col gap-2">
-          <CbLabel label="Platforms" />
-          <div v-for="(platform, index) in artistToEdit.platforms" :key="platform" class="flex w-full gap-1">
+      <!-- Platforms -->
+      <div class="w-full space-y-2">
+        <CbLabel label="Platforms" />
+        <div
+          v-for="(platform, index) in artistToEdit.platforms"
+          :key="platform"
+          class="flex w-full gap-1"
+        >
+          <div class="w-full space-y-3 rounded bg-quinary p-2 text-xs">
             <input
               type="text"
-              :value="platform"
-              @input="artistToEdit.platforms[index] = $event.target.value"
-              class="w-full bg-transparent border-b appearance-none transition-all ease-in-out duration-150 focus:p-1.5 focus:outline-none focus:bg-tertiary focus:text-secondary focus:rounded"
+              :value="platform.name"
+              @input="artistToEdit.platforms[index].name = $event.target.value"
+              class="w-full appearance-none border-b bg-transparent outline-none transition-all duration-150 ease-in-out"
             />
-            <button class="bg-red-900 text-xs p-1 rounded"
-              @click="artistToEdit.platforms.splice(artistToEdit.platforms.indexOf(platform), 1)">
-              Delete
-            </button>
-          </div>
-          <button
-            class="bg-primary rounded text-sm font-semibold uppercase py-1 hover:scale-105 hover:bg-red-900 transition-all ease-in-out duration-300"
-            @click="artistToEdit.platforms.push('')">
-            Add Platforms
-          </button>
-        </div>
-        <!-- Socials -->
-        <div class="flex flex-col gap-2">
-          <CbLabel label="Socials" />
-          <div v-for="(social, index) in artistToEdit.socials" :key="social" class="flex w-full gap-1">
             <input
               type="text"
-              :value="social"
-              @input="artistToEdit.socials[index] = $event.target.value"
-              class="w-full bg-transparent border-b appearance-none transition-all ease-in-out duration-150 focus:p-1.5 focus:outline-none focus:bg-tertiary focus:text-secondary focus:rounded"
+              :value="platform.link"
+              @input="artistToEdit.platforms[index].link = $event.target.value"
+              class="w-full appearance-none border-b bg-transparent outline-none transition-all duration-150 ease-in-out"
             />
-            <button class="bg-red-900 text-xs p-1 rounded"
-              @click="artistToEdit.socials.splice(artistToEdit.socials.indexOf(platform), 1)">
-              Delete
-            </button>
           </div>
           <button
-            class="bg-primary rounded text-sm font-semibold uppercase py-1 hover:scale-105 hover:bg-red-900 transition-all ease-in-out duration-300"
-            @click="artistToEdit.socials.push('')">
-            Add Socials
+            class="rounded bg-primary p-5 text-xs hover:bg-red-900"
+            @click="
+              artistToEdit.platforms.splice(artistToEdit.platforms.indexOf(platform), 1)
+            "
+          >
+            Delete
           </button>
         </div>
+        <button
+          class="w-full rounded bg-primary p-2 text-xs font-semibold uppercase hover:bg-red-900"
+          @click="artistToEdit.platforms.push({ name: '', link: '' })"
+        >
+          Add Platforms
+        </button>
+      </div>
+      <!-- Socials -->
+      <div class="w-full space-y-2">
+        <CbLabel label="Socials" />
+        <div
+          v-for="(social, index) in artistToEdit.socials"
+          :key="social"
+          class="flex w-full gap-2"
+        >
+          <div class="w-full space-y-3 rounded bg-quinary p-2 text-xs">
+            <input
+              type="text"
+              :value="social.name"
+              placeholder="Socials Name"
+              @input="artistToEdit.socials[index].name = $event.target.value"
+              class="w-full appearance-none border-b bg-transparent outline-none transition-all duration-150 ease-in-out"
+            />
+            <input
+              type="text"
+              :value="social.link"
+              placeholder="Socials Link"
+              @input="artistToEdit.socials[index].link = $event.target.value"
+              class="w-full appearance-none border-b bg-transparent outline-none transition-all duration-150 ease-in-out"
+            />
+          </div>
+          <button
+            class="rounded bg-primary p-5 text-xs hover:bg-red-900"
+            @click="
+              artistToEdit.socials.splice(artistToEdit.socials.indexOf(platform), 1)
+            "
+          >
+            Delete
+          </button>
+        </div>
+        <button
+          class="w-full rounded bg-primary p-2 text-xs font-semibold uppercase hover:bg-red-900"
+          @click="artistToEdit.socials.push({ name: '', link: '' })"
+        >
+          Add Socials
+        </button>
       </div>
     </div>
+
     <div class="border-t border-zinc-700 pt-3">
-      <button @click="updateArtist"
+      <button
+        @click="updateArtist"
         :disabled="isUploadingEdit"
-        class="bg-primary w-full rounded text-xl font-semibold uppercase py-3 hover:scale-105 hover:bg-red-900 transition-all ease-in-out duration-300">
-        {{ isUploadingEdit ? 'Loading' : 'Saves'}}
+        class="w-full rounded bg-primary py-3 text-xl font-semibold uppercase transition-all duration-300 ease-in-out hover:scale-105 hover:bg-red-900"
+      >
+        {{ isUploadingEdit ? 'Loading' : 'Saves' }}
       </button>
     </div>
   </div>
 </template>
-

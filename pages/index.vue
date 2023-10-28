@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import * as gQuery from '@/constants/graphql'
 
-const newsToday = ref<any[]>([])
-const randomSongs = ref<any[]>([])
-const lastRelease = ref<any[]>([])
-const lastArtistAdded = ref<any[]>([])
-
 interface Artist {
   id: string
   name: string
@@ -29,6 +24,11 @@ interface Release {
   images: string[]
   artist: Artist
 }
+
+const newsToday = ref<any[]>([])
+const randomSongs = ref<any[]>([])
+const lastRelease = ref<any[]>([])
+const lastArtistAdded = ref<any[]>([])
 
 const getRandomMusics = async () => {
   const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_MUSICS_COUNT)
@@ -67,7 +67,8 @@ const getTodayComebacks = async () => {
   const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_GET_TODAY_COMEBACK, {
     filters: {
       date: {
-        eq: new Date().toISOString().split('T')[0],
+        // eq: new Date().toISOString().split('T')[0],
+        eq: '2023-10-30',
       },
     },
   })
@@ -82,7 +83,6 @@ const getTodayComebacks = async () => {
 }
 
 const getLastRelease = async () => {
-  // TODO: get last release
   const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_LATEST_RELEASE)
   if (data.value) {
     // @ts-ignore
@@ -221,15 +221,14 @@ useHead({
 </script>
 
 <template>
-  <div class="container mx-auto space-y-12 lg:px-5 lg:py-10">
-    <ComebackSlider :newsToday="newsToday" />
-
-    <div
-      v-if="lastArtistAdded.length"
-      class="animate__animated animate__fadeInUp space-y-5"
-    >
-      <p class="text-2xl font-bold">Artist Added</p>
+  <div class="container mx-auto pt-12">
+    <!-- Slider Block -->
+    <ComebackSlider :newsToday="newsToday" class="pb-12" />
+    <!-- Artist Added Block -->
+    <div class="space-y-5 pb-12">
+      <p class="pl-5 text-2xl font-bold lg:pl-0">Artist Added</p>
       <section
+        v-if="lastArtistAdded.length"
         class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
       >
         <CardObject
@@ -242,14 +241,27 @@ useHead({
           isArtist
         />
       </section>
-    </div>
-
-    <div
-      v-if="lastArtistAdded.length && lastRelease.length"
-      class="animate__animated animate__fadeInUp space-y-5"
-    >
-      <p class="text-2xl font-bold">Recent Releases</p>
       <section
+        v-else
+        class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
+      >
+        <div
+          v-for="n in 8"
+          class="min-w-[10rem] max-w-[10rem] space-y-3 rounded bg-quaternary p-4 2xl:min-w-[11rem] 2xl:max-w-[11rem]"
+        >
+          <Skeleton :key="n" class="aspect-square w-full rounded-full" />
+          <div class="space-y-3">
+            <Skeleton class="h-4 w-full rounded-full" />
+            <Skeleton class="h-4 w-3/4 rounded-full" />
+          </div>
+        </div>
+      </section>
+    </div>
+    <!-- Recent Releases Block -->
+    <div class="space-y-5 pb-12">
+      <p class="pl-5 text-2xl font-bold lg:pl-0">Recent Releases</p>
+      <section
+        v-if="lastArtistAdded.length && lastRelease.length"
         class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
       >
         <CardObject
@@ -257,9 +269,25 @@ useHead({
           :key="release.id"
           :mainTitle="release.name"
           :subTitle="release.artist.name"
+          :artistId="release.artist.id"
           :image="release.images[2]"
           :object-link="`/release/${release.id}`"
         />
+      </section>
+      <section
+        v-else
+        class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
+      >
+        <div
+          v-for="n in 8"
+          class="min-w-[10rem] max-w-[10rem] space-y-3 rounded bg-quaternary p-4 2xl:min-w-[11rem] 2xl:max-w-[11rem]"
+        >
+          <Skeleton :key="n" class="aspect-square w-full rounded" />
+          <div class="space-y-3">
+            <Skeleton class="h-4 w-full rounded-full" />
+            <Skeleton class="h-4 w-3/4 rounded-full" />
+          </div>
+        </div>
       </section>
     </div>
   </div>

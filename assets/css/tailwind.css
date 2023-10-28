@@ -1,13 +1,17 @@
 @import 'multiselect.css';
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body::-webkit-scrollbar {
-  display: none;
+* {
+  font-family: 'Lato', sans-serif;
 }
 
+body {
+  overflow-y: scroll;
+}
 
 .remove-scrollbar::-webkit-scrollbar {
   display: none;
@@ -54,7 +58,6 @@ body::-webkit-scrollbar {
   opacity: 0;
   transform: translateX(-30px);
 }
-
 
 @keyframes spinning {
   from {

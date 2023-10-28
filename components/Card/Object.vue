@@ -1,7 +1,7 @@
 <template>
   <NuxtLink
     :to="objectLink"
-    class="group min-w-[10rem] max-w-[10rem] space-y-1.5 rounded bg-quaternary p-3 hover:bg-quinary 2xl:min-w-[11rem] 2xl:max-w-[11rem]"
+    class="group min-w-[10rem] max-w-[10rem] space-y-3 rounded bg-quaternary p-4 shadow-xl shadow-secondary transition-all duration-500 ease-in-out hover:bg-quinary 2xl:min-w-[11rem] 2xl:max-w-[11rem]"
   >
     <div class="relative">
       <div
@@ -11,24 +11,24 @@
       ></div>
       <NuxtImg
         :src="image"
-        class="aspect-square w-full object-cover"
+        class="aspect-square w-full object-cover shadow-xl shadow-secondary"
         @load="imageLoaded = true"
         :class="isArtist ? 'rounded-full' : 'rounded'"
       />
     </div>
-    <p
-      class="font-semibol truncate group-hover:underline group-hover:underline-offset-8 lg:text-xl"
-    >
-      {{ mainTitle }}
-    </p>
-    <p v-if="isArtist" class="truncate text-sm lg:text-base">{{ subTitle }}</p>
-    <NuxtLink
-      v-else
-      :to="`/artist/${artistId}`"
-      class="truncate text-sm hover:underline lg:text-base"
-    >
-      {{ subTitle }}
-    </NuxtLink>
+    <div class="space-y-1.5">
+      <p class="font-semibol truncate group-hover:underline">
+        {{ mainTitle }}
+      </p>
+      <p v-if="isArtist" class="truncate text-sm">{{ subTitle }}</p>
+      <NuxtLink
+        v-else
+        :to="`/artist/${artistId}`"
+        class="truncate text-sm hover:underline lg:text-base"
+      >
+        {{ subTitle }}
+      </NuxtLink>
+    </div>
   </NuxtLink>
 </template>
 
