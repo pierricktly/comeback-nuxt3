@@ -58,7 +58,7 @@ export const GRAPHQL_QUERY_MUSICS_COUNT = gql`
   }
 `
 
-export const GRAPHQL_QUERY_GET_MUSICS_NUMBER = gql`
+export const GRAPHQL_QUERY_GET_MUSICS_BY_ID = gql`
   query Pagination($start: Int, $limit: Int) {
     musics(pagination: { start: $start, limit: $limit }) {
       data {
@@ -66,6 +66,7 @@ export const GRAPHQL_QUERY_GET_MUSICS_NUMBER = gql`
         attributes {
           videoId
           name
+          images
           duration
           releases {
             data {
@@ -113,6 +114,29 @@ export const GRAPHQL_QUERY_GET_TODAY_COMEBACK = gql`
       }
     }
   }
+`
+
+export const GRAPHQL_QUERY_GET_COMEBACK_AFTER_TODAY = gql`
+query Query($filters: ComebackFiltersInput, $sort: [String]) {
+  comebacks(filters: $filters, sort: $sort) {
+    data {
+      id
+      attributes {
+        date
+        message
+        artist {
+          data {
+            id
+            attributes {
+              name
+              images
+            }
+          }
+        }
+      }
+    }
+  }
+}
 `
 
 export const GRAPHQL_QUERY_GET_ARTIST_BY_ID = gql`

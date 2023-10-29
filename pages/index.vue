@@ -1,41 +1,45 @@
 <script setup lang="ts">
 import * as gQuery from '@/constants/graphql'
-
-interface Artist {
-  id: string
-  name: string
-  type?: string
-  images: string[]
-}
-
-interface Comeback {
-  id: string
-  date: string
-  message: string
-  artist: Artist
-}
-
-interface Release {
-  id: string
-  idYoutubeMusic: string
-  name: string
-  type?: string
-  date: string
-  images: string[]
-  artist: Artist
-}
+import type { Artist } from '@/types/artist'
+import type { Comeback } from '@/types/comeback'
+import type { Release } from '@/types/release'
+import type { Music } from '@/types/music'
 
 const newsToday = ref<any[]>([])
 const randomSongs = ref<any[]>([])
 const lastRelease = ref<any[]>([])
 const lastArtistAdded = ref<any[]>([])
+const comebackList = ref<any[]>([])
+
+const { data: dataRandomMusics } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_MUSICS_COUNT)
+const { data: dataComebacks } = await useAsyncQuery(
+  gQuery.GRAPHQL_QUERY_GET_COMEBACK_AFTER_TODAY,
+  {
+    filters: {
+      date: {
+        gt: new Date().toISOString().split('T')[0],
+      },
+    },
+    sort: 'date:asc',
+  },
+)
+
+const getListComeback = async () => {
+  if (dataComebacks.value) {
+    // @ts-ignore
+    dataComebacks.value.comebacks.data.map((comeback: any) => {
+      formatComebackObject(comeback).then((cb) => {
+        // console.log('getListComeback -> cb', cb)
+        comebackList.value.push(cb)
+      })
+    })
+  }
+}
 
 const getRandomMusics = async () => {
   const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_MUSICS_COUNT)
-
   if (data.value) {
-    // @ts-ignore
-    const totalNumber = data.value.musics.meta.pagination.total - 1
+    const totalNumber = data?.value?.musics.meta.pagination.total - 1
     const randomNumbers: number[] = []
     while (randomNumbers.length < 5) {
       const randomNumber = Math.floor(Math.random() * totalNumber)
@@ -44,20 +48,20 @@ const getRandomMusics = async () => {
       }
     }
 
-    const songPromises = randomNumbers.map((randomNumber) => {
-      return useAsyncQuery(gQuery.GRAPHQL_QUERY_GET_MUSICS_NUMBER, {
+    const songPromises = randomNumbers.map((randomNumber) =>
+      useAsyncQuery(gQuery.GRAPHQL_QUERY_GET_MUSICS_BY_ID, {
         start: randomNumber,
         limit: 1,
-      })
-    })
+      }).then((result) => {
+        return result?.data?.value?.musics?.data[0]
+      }),
+    )
 
-    const songResults = await Promise.all(songPromises)
+    const songResults = await Promise.allSettled(songPromises)
 
-    songResults.forEach((result) => {
-      // @ts-ignore
-      if (result.data.value?.musics.data[0]) {
-        // @ts-ignore
-        randomSongs.value.push(result.data.value.musics.data[0])
+    songResults.forEach(async (result) => {
+      if (result.status === 'fulfilled' && result.value) {
+        formatMusicObject(result.value)
       }
     })
   }
@@ -67,8 +71,8 @@ const getTodayComebacks = async () => {
   const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_GET_TODAY_COMEBACK, {
     filters: {
       date: {
-        // eq: new Date().toISOString().split('T')[0],
-        eq: '2023-10-30',
+        eq: new Date().toISOString().split('T')[0],
+        // eq: '2023-10-30',
       },
     },
   })
@@ -107,7 +111,7 @@ const getLastArtistAdded = async () => {
 }
 
 const formatComebackObject = async (comeback: any) => {
-  let cb = {} as Comeback
+  let cb: Partial<Comeback> = {}
 
   cb.id = comeback.id
   cb.date = comeback.attributes.date
@@ -122,7 +126,7 @@ const formatComebackObject = async (comeback: any) => {
 }
 
 const formatReleaseObject = async (release: any) => {
-  let r = {} as Release
+  let r: Partial<Release> = {}
 
   r.id = release.id
   r.idYoutubeMusic = release.attributes.idYoutubeMusic
@@ -140,7 +144,7 @@ const formatReleaseObject = async (release: any) => {
 }
 
 const formatArtistObject = async (artist: any) => {
-  let a = {} as Artist
+  let a: Partial<Artist> = {}
 
   a.id = artist.id
   a.name = artist.attributes.name
@@ -150,11 +154,57 @@ const formatArtistObject = async (artist: any) => {
   return a
 }
 
+const formatMusicObject = async (music: any) => {
+  let m: Partial<Music> = {}
+
+  m.id = music.id
+  m.name = music.attributes.name
+  m.videoId = music.attributes.videoId
+  m.duration = music.attributes.duration
+  m.images = music.attributes.images
+  m.artists = music.attributes.artists.data.map((artist: any) => {
+    return {
+      id: artist.id,
+      name: artist.attributes.name,
+      images: artist.attributes.images,
+    }
+  })
+  m.releases = music.attributes.releases.data.map((release: any) => {
+    return {
+      id: release.id,
+      name: release.attributes.name,
+    }
+  })
+
+  randomSongs.value.push(m)
+  return m
+}
+
+function getDaysUntil(dateString: string): number {
+  const today = new Date()
+  const futureDate = new Date(dateString)
+  const timeDifference = futureDate.getTime() - today.getTime()
+  const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24))
+  return daysDifference
+}
+
+//if date in argument is today return true
+function isToday(dateString: string): boolean {
+  const today = new Date()
+  const futureDate = new Date(dateString)
+  return (
+    today.getFullYear() === futureDate.getFullYear() &&
+    today.getMonth() === futureDate.getMonth() &&
+    today.getDate() === futureDate.getDate()
+  )
+}
+
 onMounted(async () => {
   await getRandomMusics()
   await getTodayComebacks()
   await getLastRelease()
   await getLastArtistAdded()
+  await getListComeback()
 })
 
 useHead({
@@ -221,11 +271,65 @@ useHead({
 </script>
 
 <template>
-  <div class="container mx-auto pt-12">
+  <div class="container mx-auto pt-8 lg:px-10 lg:pt-12">
     <!-- Slider Block -->
-    <ComebackSlider :newsToday="newsToday" class="pb-12" />
+    <ComebackSlider :newsToday="newsToday" class="pb-8 lg:pb-12" />
+    <!-- Random Songs Block -->
+    <div class="grid grid-cols-1 gap-5 px-5 pb-8 lg:grid-cols-2 lg:px-0 lg:pb-12">
+      <div class="w-full rounded bg-quaternary p-3">
+        <p class="pb-3 text-center text-xl font-bold">Discover Music</p>
+        <div class="space-y-2">
+          <MusicDisplay
+            v-for="song in randomSongs"
+            :key="song.id"
+            :albumId="song.releases[0].id"
+            :artistId="song.artists[0].id"
+            :musicId="song.id"
+            :musicName="song.name"
+            :musicImage="song.images[2]"
+            :artistName="song.artists[0].name"
+            :albumName="song.releases[0].name"
+            :duration="song.duration"
+            :musicVideoId="song.videoId"
+            class="w-full bg-quinary"
+          />
+        </div>
+      </div>
+
+      <div class="w-full rounded bg-quaternary p-3">
+        <p class="pb-3 text-center text-xl font-bold">Comeback</p>
+        <div class="space-y-2">
+          <div
+            v-for="comeback in comebackList"
+            :key="comeback.id"
+            class="overflow-hidden rounded bg-quinary text-xs"
+          >
+            <div class="flex w-full justify-between bg-secondary">
+              <div class="flex gap-1">
+                <p
+                  class="p-1 px-1.5"
+                  :class="
+                    isToday(comeback.date)
+                      ? 'bg-primary'
+                      : 'bg-tertiary font-bold text-secondary'
+                  "
+                >
+                  {{
+                    isToday(comeback.date) ? 'Today' : `D-${getDaysUntil(comeback.date)}`
+                  }}
+                </p>
+                <p class="p-1">{{ comeback.artist.name }}</p>
+              </div>
+              <p class="p-1 pr-3">
+                {{ comeback.message }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Artist Added Block -->
-    <div class="space-y-5 pb-12">
+    <div class="space-y-5 pb-8 lg:pb-12">
       <p class="pl-5 text-2xl font-bold lg:pl-0">Artist Added</p>
       <section
         v-if="lastArtistAdded.length"
@@ -258,7 +362,7 @@ useHead({
       </section>
     </div>
     <!-- Recent Releases Block -->
-    <div class="space-y-5 pb-12">
+    <div class="space-y-5 pb-8 lg:pb-12">
       <p class="pl-5 text-2xl font-bold lg:pl-0">Recent Releases</p>
       <section
         v-if="lastArtistAdded.length && lastRelease.length"

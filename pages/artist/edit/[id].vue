@@ -6,29 +6,8 @@ import {
 } from '@/constants/graphql'
 import VueMultiselect from 'vue-multiselect'
 import _ from 'lodash'
+import type { Artist } from "@/types/artist"
 
-interface Artist {
-  id: string
-  idYoutubeMusic: string
-  name: string
-  description: string
-  type: string
-  images: string[]
-  styles: string[]
-  socials: Object
-  platforms: Object
-  members: any[]
-  groups: any[]
-  releases: Release[]
-}
-
-interface Release {
-  id: string
-  name: string
-  type: string
-  date: string
-  images: string[]
-}
 
 // Original Data
 const artistGQ = ref<Artist>({} as Artist)

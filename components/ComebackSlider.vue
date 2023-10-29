@@ -48,6 +48,7 @@
           Track every next release by your favorite artists
         </p>
       </div>
+      <p class="absolute bottom-5 right-5 text-quinary">No Comeback Reported Today</p>
     </section>
   </div>
 </template>

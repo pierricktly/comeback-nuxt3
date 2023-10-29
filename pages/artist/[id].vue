@@ -1,31 +1,12 @@
 <script setup lang="ts">
 import { GRAPHQL_QUERY_GET_ARTIST_BY_ID } from '@/constants/graphql'
-
-interface Artist {
-  id: string
-  name: string
-  description: string
-  type: string
-  images: string[]
-  styles: string[]
-  socials: Object
-  platforms: Object
-  members: Artist[]
-  groups: Artist[]
-  releases: Release[]
-}
-
-interface Release {
-  id: string
-  name: string
-  type: string
-  date: string
-  images: string[]
-}
+import { type Artist } from '@/types/artist'
+import { type Release } from '@/types/release'
 
 const title = ref('Artist Page')
 const description = ref('Artist')
 const route = useRoute()
+
 const artist = ref<Artist>({} as Artist)
 const imageLoaded = ref(false)
 
