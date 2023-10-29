@@ -170,7 +170,7 @@ useHead({
       </div>
     </div>
     <!--  Artist Data -->
-    <div class="container mx-auto space-y-10 py-10 sm:px-0">
+    <div class="container mx-auto space-y-10 py-10 px-5 2xl:px-0">
       <section v-if="artist.platforms" class="space-y-2 px-5 lg:px-0">
         <h2 class="text-xl font-black">Streaming Platforms</h2>
         <div class="flex gap-2">
@@ -183,7 +183,7 @@ useHead({
         </div>
       </section>
 
-      <section v-if="artist.socials" class="space-y-2 px-5 lg:px-0">
+      <section v-if="artist.socials" class="space-y-2">
         <h2 class="text-xl font-black">Socials Media Platforms</h2>
         <div class="flex gap-2">
           <CbExternalLink
@@ -210,9 +210,9 @@ useHead({
       </section>
 
       <section v-if="memberList?.length" class="space-y-2.5">
-        <h2 class="px-5 text-xl font-black lg:px-0">Members</h2>
+        <h2 class="text-xl font-black">Members</h2>
         <div
-          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0"
+          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
         >
           <CardObject
             v-for="member in memberList"
@@ -227,9 +227,9 @@ useHead({
       </section>
 
       <section v-if="subunitList?.length" class="space-y-2.5">
-        <h2 class="px-5 text-xl font-black lg:px-0">Members</h2>
+        <h2 class="text-xl font-black">Members</h2>
         <div
-          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0"
+          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
         >
           <CardObject
             v-for="unit in subunitList"
@@ -244,9 +244,9 @@ useHead({
       </section>
 
       <section v-if="artist.groups?.length" class="space-y-2.5">
-        <h2 class="px-5 text-xl font-black lg:px-0">Groups</h2>
+        <h2 class="text-xl font-black">Groups</h2>
         <div
-          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0"
+          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
         >
           <CardObject
             v-for="art in artist.groups"
@@ -261,9 +261,9 @@ useHead({
       </section>
 
       <section v-if="artist.releases?.length" class="space-y-2.5">
-        <h2 class="px-5 text-xl font-black lg:px-0">Releases</h2>
+        <h2 class="text-xl font-black">Releases</h2>
         <div
-          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0"
+          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
         >
           <CardObject
             v-for="release in artist.releases"

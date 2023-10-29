@@ -67,8 +67,8 @@ const convertDuration = (duration: any) => {
         class="hidden h-10 w-10 rounded shadow shadow-secondary md:block"
       />
       <div>
-        <div class="flex items-end gap-2 text-start">
-          <p class="whitespace-nowrap text-base font-semibold">
+        <div class="flex items-center gap-2 text-start">
+          <p class="truncate whitespace-nowrap text-sm font-semibold">
             {{ musicName }}
           </p>
           <p>-</p>
@@ -83,7 +83,7 @@ const convertDuration = (duration: any) => {
           />
           <p>{{ artistName }}</p>
           <p>-</p>
-          <p class="hidden  md:block">{{ albumName }}</p>
+          <p class="hidden md:block">{{ albumName }}</p>
           <!-- <p class="hidden sm:block">1, 054, 258, 031 on Youtube (Music)</p> -->
         </div>
       </div>

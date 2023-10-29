@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 const idYoutubeVideo = useIdYoutubeVideo()
 const isPlayingVideo = useIsPlayingVideo()
 const title = ref('Release Page')
@@ -71,4 +71,5 @@ useHead({
       </div>
     </div>
   </div>
-</template>
+</template> -->
+<template></template>

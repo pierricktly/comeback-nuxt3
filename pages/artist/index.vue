@@ -1,4 +1,5 @@
-<script setup>
+<template></template>
+<!-- <script setup>
 const artistFetch = ref(null)
 
 onMounted(async () => {
@@ -134,4 +135,4 @@ useHead({
 .list-leave-active {
   position: absolute;
 }
-</style>
+</style> -->

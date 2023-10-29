@@ -302,28 +302,26 @@ useHead({
           <div
             v-for="comeback in comebackList"
             :key="comeback.id"
-            class="overflow-hidden rounded bg-quinary text-xs"
+            class="flex w-full justify-between overflow-hidden rounded bg-quinary text-xs"
           >
-            <div class="flex w-full justify-between bg-secondary">
-              <div class="flex gap-1">
-                <p
-                  class="p-1 px-1.5"
-                  :class="
-                    isToday(comeback.date)
-                      ? 'bg-primary'
-                      : 'bg-tertiary font-bold text-secondary'
-                  "
-                >
-                  {{
-                    isToday(comeback.date) ? 'Today' : `D-${getDaysUntil(comeback.date)}`
-                  }}
-                </p>
-                <p class="p-1">{{ comeback.artist.name }}</p>
-              </div>
-              <p class="p-1 pr-3">
-                {{ comeback.message }}
+            <div class="flex gap-1">
+              <p
+                class="p-1 px-1.5"
+                :class="
+                  isToday(comeback.date)
+                    ? 'bg-primary'
+                    : 'bg-tertiary font-bold text-secondary'
+                "
+              >
+                {{
+                  isToday(comeback.date) ? 'Today' : `D-${getDaysUntil(comeback.date)}`
+                }}
               </p>
+              <p class="p-1">{{ comeback.artist.name }}</p>
             </div>
+            <p class="p-1 pr-2">
+              {{ comeback.message }}
+            </p>
           </div>
         </div>
       </div>
