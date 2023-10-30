@@ -38,6 +38,8 @@ export default defineNuxtConfig({
     },
   },
 
+  ssr: false,
+
   pinia: {
     autoImports: ['defineStore'],
   },
