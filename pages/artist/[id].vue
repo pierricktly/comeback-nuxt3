@@ -170,7 +170,7 @@ useHead({
       </div>
     </div>
     <!--  Artist Data -->
-    <div class="container mx-auto space-y-10 px-5 lg:py-10 2xl:px-0">
+    <div class="container mx-auto space-y-10 pb-10 px-5 sm:px-0 md:px-5 md:py-10 2xl:px-0">
       <!-- Skeleton -->
       <div v-if="!artist.description && !artist.name" class="space-y-2">
         <Skeleton class="h-3 w-3/4 rounded-full" />
@@ -256,7 +256,7 @@ useHead({
             :mainTitle="art.name"
             :subTitle="art.type == 'SOLO' ? 'Soloist' : 'Group'"
             :image="art.images[0]"
-            :object-link="`/art/${art.id}`"
+            :object-link="`/artist/${art.id}`"
             isArtist
           />
         </div>
@@ -274,6 +274,7 @@ useHead({
             :subTitle="release.type == 'ALBUM' ? 'ALBUM' : 'SINGLE'"
             :image="release.images[release.images.length - 1]"
             :object-link="`/release/${release.id}`"
+            isReleaseDisplay
           />
         </div>
       </section>

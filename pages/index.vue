@@ -5,6 +5,8 @@ import type { Comeback } from '@/types/comeback'
 import type { Release } from '@/types/release'
 import type { Music } from '@/types/music'
 
+const artistList = useArtistList()
+
 const newsToday = ref<any[]>([])
 const randomSongs = ref<any[]>([])
 const lastRelease = ref<any[]>([])

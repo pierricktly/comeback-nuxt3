@@ -1,9 +1,23 @@
+<script setup lang="ts">
+import { GRAPHQL_QUERY_GET_ALL_ARTISTS } from '@/constants/graphql'
+import type { Artist } from './types/artist'
+
+const artistList = useArtistList()
+const { formatArtistData } = useGeneralFunction()
+const { data } = await useAsyncQuery(GRAPHQL_QUERY_GET_ALL_ARTISTS)
+await data?.value?.artists?.data.map(async (artist) => {
+  artistList.value.push(await formatArtistData(artist))
+})
+</script>
+
 <template>
   <NuxtLayout>
-    <NuxtPage />
+    <div>
+      <NuxtLoadingIndicator color="#9E0102" />
+      <NuxtPage />
+    </div>
   </NuxtLayout>
 </template>
-
 
 <style>
 /* Page Transitions - 0.4s Slide/Fade */

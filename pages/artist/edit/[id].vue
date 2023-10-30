@@ -34,38 +34,30 @@ const { data: dataAllArtists }: any = await useAsyncQuery(
 
 const { mutate } = useMutation(GRAPHQL_MUTATION_UPDATE_ARTIST)
 
-const formatArtistData = async () => {
-  const artistTmp = ref<Artist>({} as Artist)
-  if (data.value) {
-    artistTmp.value.id = data.value.artist.data.id
-    artistTmp.value.idYoutubeMusic =
-      data.value.artist.data.attributes.idYoutubeMusic || ''
-    artistTmp.value.name = data.value.artist.data.attributes.name
-    artistTmp.value.description = data.value.artist.data.attributes.description || ''
-    artistTmp.value.type = data.value.artist.data.attributes.type
-    artistTmp.value.images = data.value.artist.data.attributes.images
-    artistTmp.value.styles = data.value.artist.data.attributes.styles || []
-    artistTmp.value.socials = data.value.artist.data.attributes.socials || []
-    artistTmp.value.platforms = data.value.artist.data.attributes.platforms || []
-    if (data.value.artist.data.attributes.members) {
-      //for each member use formatMiniArtistObject to have a list in artistTmp.value.members
-      artistTmp.value.members = await Promise.all(
-        data.value.artist.data.attributes.members?.data.map(async (member: any) => {
-          return await formatMiniArtistObject(member)
-        }),
-      )
-    }
-    if (data.value.artist.data.attributes.groups) {
-      //for each group use formatMiniArtistObject to have a list in artistTmp.value.groups
-      artistTmp.value.groups = await Promise.all(
-        data.value.artist.data.attributes.groups?.data.map(async (group: any) => {
-          return await formatMiniArtistObject(group)
-        }),
-      )
-    }
-  }
-  return artistTmp.value
-}
+const formatArtistData = async (artistData: any) => {
+  if (!artistData) return {} as Artist;
+
+  const { attributes } = artistData;
+  const artistTmp: Artist = {
+    id: artistData.id,
+    idYoutubeMusic: attributes.idYoutubeMusic || '',
+    name: attributes.name,
+    description: attributes.description || '',
+    type: attributes.type,
+    images: attributes.images,
+    styles: attributes.styles || [],
+    socials: attributes.socials || [],
+    platforms: attributes.platforms || [],
+    members: attributes.members ? await formatArray(attributes.members.data, formatMiniArtistObject) : [],
+    groups: attributes.groups ? await formatArray(attributes.groups.data, formatMiniArtistObject) : []
+  };
+
+  return artistTmp;
+};
+
+const formatArray = async (array: any[], formatter: Function) => {
+  return await Promise.all(array.map(async item => await formatter(item)));
+};
 
 const formatMiniArtistObject = async (artist: any) => {
   let a = {} as Artist
@@ -134,8 +126,9 @@ const updateArtist = async () => {
 
 onMounted(async () => {
   // fetch data
-  artistGQ.value = await formatArtistData()
-  artistToEdit.value = _.cloneDeep(await formatArtistData())
+  const artistData = data.value?.artist?.data;
+  artistGQ.value = await formatArtistData(artistData);
+  artistToEdit.value = _.cloneDeep(await formatArtistData(artistData));
 
   if (dataAllArtists.value) {
     artistList.value = await Promise.all(

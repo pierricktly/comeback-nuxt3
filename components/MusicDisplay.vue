@@ -89,7 +89,7 @@ const convertDuration = (duration: any) => {
             format="webp"
             :alt="artistName"
             :src="artistImage"
-            class="h-3 w-3 rounded-full shadow shadow-secondary"
+            class="h-3 w-3 object-cover rounded-full shadow shadow-secondary"
           />
           <NuxtLink :to="`/artist/${artistId}`" class="whitespace-nowrap hover:underline">
             {{ artistName }}

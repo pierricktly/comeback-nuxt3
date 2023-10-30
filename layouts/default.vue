@@ -10,7 +10,7 @@ const isPlayingVideo = useIsPlayingVideo()
     <Navigation
       class="hidden md:block"
     />
-    <!-- <div
+    <div
       class="inset-x-0 z-50 pb-4 pt-5 md:hidden"
     >
       <img
@@ -20,7 +20,7 @@ const isPlayingVideo = useIsPlayingVideo()
         loading="lazy"
         class="mx-auto block h-9 w-auto"
       />
-    </div> -->
+    </div>
     <main
       class="min-h-[calc(100vh-60px)]"
     >

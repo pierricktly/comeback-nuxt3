@@ -20,14 +20,14 @@
       <p class="font-semibol truncate group-hover:underline">
         {{ mainTitle }}
       </p>
-      <NuxtLink
-        v-if="!isArtist"
+      <p v-if="isArtist || isReleaseDisplay" class="truncate text-sm">{{ subTitle }}</p>
+      <LazyNuxtLink
+        v-else
         :to="`/artist/${artistId}`"
         class="truncate text-sm hover:underline lg:text-base"
       >
         {{ subTitle }}
-      </NuxtLink>
-      <p v-else class="truncate text-sm">{{ subTitle }}</p>
+      </LazyNuxtLink>
     </div>
   </NuxtLink>
 </template>
@@ -56,6 +56,10 @@ const { isArtist, artistId, mainTitle, subTitle, image, objectLink } = definePro
   objectLink: {
     type: String,
     default: '/',
+  },
+  isReleaseDisplay: {
+    type: Boolean,
+    default: false,
   },
 })
 const imageLoaded = ref(false)
