@@ -1,7 +1,7 @@
 <template>
   <div class="relative overflow-hidden rounded">
     <div
-      class="absolute inset-0 min-h-[40rem] w-full bg-primary object-cover transition-all duration-500 ease-in-out lg:aspect-video lg:max-h-[40rem]"
+      class="absolute inset-0 min-h-[20rem] w-full bg-primary object-cover transition-all duration-500 ease-in-out lg:aspect-video lg:max-h-[36rem]"
       :class="imageLoaded ? 'opacity-0' : 'opacity-100'"
     ></div>
     <NuxtImg
@@ -10,7 +10,7 @@
       :alt="name"
       :src="image"
       @load="imageLoaded = true"
-      class="min-h-[20rem] w-full object-cover lg:aspect-video lg:max-h-[40rem]"
+      class="min-h-[20rem] w-full object-cover lg:aspect-video lg:max-h-[36rem]"
     />
   </div>
   <NuxtLink

@@ -6,8 +6,7 @@ import {
 } from '@/constants/graphql'
 import VueMultiselect from 'vue-multiselect'
 import _ from 'lodash'
-import type { Artist } from "@/types/artist"
-
+import type { Artist } from '@/types/artist'
 
 // Original Data
 const artistGQ = ref<Artist>({} as Artist)
@@ -118,19 +117,19 @@ const updateArtist = async () => {
   }
 
   const response = await mutate({
-      data: updatedFields,
-      updateArtistId: route.params.id,
+    data: updatedFields,
+    updateArtistId: route.params.id,
   })
-  .then((response) => {
-    console.log(response)
-    // isUploadingEdit.value = false
-    // redirect to artist page
-  const router = useRouter()
-    router.push(`/artist/${route.params.id}`)
-  })
-  .catch((error) => {
-    console.log(error)
-  })
+    .then((response) => {
+      console.log(response)
+      // isUploadingEdit.value = false
+      // redirect to artist page
+      const router = useRouter()
+      router.push(`/artist/${route.params.id}`)
+    })
+    .catch((error) => {
+      console.log(error)
+    })
 }
 
 onMounted(async () => {
@@ -177,14 +176,14 @@ onMounted(async () => {
       </div>
       <!-- Name & Id -->
       <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <CbInput
+        <ComebackInput
           v-if="artistToEdit.name"
           label="Name"
           :placeholder="artistGQ.name"
           v-model="artistToEdit.name"
         />
         <Skeleton v-else class="h-10 w-full rounded" />
-        <CbInput
+        <ComebackInput
           v-if="artistToEdit.id"
           label="Unique Id"
           :placeholder="artistGQ.id"
@@ -195,7 +194,7 @@ onMounted(async () => {
       </div>
       <!-- Id YTM & Type -->
       <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <CbInput
+        <ComebackInput
           v-if="artistToEdit.idYoutubeMusic"
           label="Id Youtube Music"
           :placeholder="artistGQ.idYoutubeMusic"
@@ -203,7 +202,7 @@ onMounted(async () => {
         />
         <Skeleton v-else class="h-10 w-full rounded" />
         <div v-if="artistToEdit.type" class="space-y-1">
-          <CbLabel label="Type" />
+          <ComebackLabel label="Type" />
           <select
             v-model="artistToEdit.type"
             class="w-full appearance-none border-b bg-transparent hover:cursor-pointer focus:outline-none"
@@ -216,7 +215,7 @@ onMounted(async () => {
       </div>
       <!-- Styles -->
       <div class="flex flex-col gap-1">
-        <CbLabel label="Styles" />
+        <ComebackLabel label="Styles" />
         <!-- <VueMultiselect
           v-if="artistToEdit.styles"
           v-model="artistToEdit.styles"
@@ -231,7 +230,7 @@ onMounted(async () => {
       </div>
       <!-- Description -->
       <div class="flex flex-col gap-1">
-        <CbLabel label="Description" />
+        <ComebackLabel label="Description" />
         <textarea
           :placeholder="artistGQ.description || 'Description'"
           v-model="artistToEdit.description"
@@ -240,7 +239,7 @@ onMounted(async () => {
       </div>
       <!-- Group -->
       <div v-if="artistList" class="flex flex-col gap-1">
-        <CbLabel label="Group" />
+        <ComebackLabel label="Group" />
         <VueMultiselect
           v-model="artistToEdit.groups"
           label="name"
@@ -255,7 +254,7 @@ onMounted(async () => {
       </div>
       <!-- Members -->
       <div v-if="artistList" class="flex flex-col gap-1">
-        <CbLabel label="Members" />
+        <ComebackLabel label="Members" />
         <VueMultiselect
           v-model="artistToEdit.members"
           label="name"
@@ -270,7 +269,7 @@ onMounted(async () => {
       </div>
       <!-- Platforms -->
       <div class="w-full space-y-2">
-        <CbLabel label="Platforms" />
+        <ComebackLabel label="Platforms" />
         <div
           v-for="(platform, index) in artistToEdit.platforms"
           :key="platform"
@@ -280,12 +279,14 @@ onMounted(async () => {
             <input
               type="text"
               :value="platform.name"
+              placeholder="Platform's Name"
               @input="artistToEdit.platforms[index].name = $event.target.value"
               class="w-full appearance-none border-b bg-transparent outline-none transition-all duration-150 ease-in-out"
             />
             <input
               type="text"
               :value="platform.link"
+              placeholder="Platform's Link"
               @input="artistToEdit.platforms[index].link = $event.target.value"
               class="w-full appearance-none border-b bg-transparent outline-none transition-all duration-150 ease-in-out"
             />
@@ -308,7 +309,7 @@ onMounted(async () => {
       </div>
       <!-- Socials -->
       <div class="w-full space-y-2">
-        <CbLabel label="Socials" />
+        <ComebackLabel label="Socials" />
         <div
           v-for="(social, index) in artistToEdit.socials"
           :key="social"
@@ -318,14 +319,14 @@ onMounted(async () => {
             <input
               type="text"
               :value="social.name"
-              placeholder="Socials Name"
+              placeholder="Social's Name"
               @input="artistToEdit.socials[index].name = $event.target.value"
               class="w-full appearance-none border-b bg-transparent outline-none transition-all duration-150 ease-in-out"
             />
             <input
               type="text"
               :value="social.link"
-              placeholder="Socials Link"
+              placeholder="Social's Link"
               @input="artistToEdit.socials[index].link = $event.target.value"
               class="w-full appearance-none border-b bg-transparent outline-none transition-all duration-150 ease-in-out"
             />

@@ -127,11 +127,11 @@ useHead({
               {{ artist.name }}
             </h1>
             <div class="flex flex-wrap gap-2 text-[0.5rem] lg:text-xs">
-              <CbTag v-if="artist.type">
+              <ComebackTag v-if="artist.type">
                 {{ artist.type == 'SOLO' ? 'Soloist' : 'Group' }}
-              </CbTag>
-              <!-- <CbTag v-if="artist.type">K-Pop</CbTag>
-              <CbTag v-if="artist.type">K-Hiphop</CbTag> -->
+              </ComebackTag>
+              <!-- <ComebackTag v-if="artist.type">K-Pop</CbTag>
+              <ComebackTag v-if="artist.type">K-Hiphop</CbTag> -->
             </div>
             <!-- <div class="space-y-2 text-xs">
               <p>1, 054, 258, 031 streams on Youtube Music</p>
@@ -170,11 +170,27 @@ useHead({
       </div>
     </div>
     <!--  Artist Data -->
-    <div class="container mx-auto space-y-10 py-10 px-5 2xl:px-0">
-      <section v-if="artist.platforms" class="space-y-2 px-5 lg:px-0">
-        <h2 class="text-xl font-black">Streaming Platforms</h2>
+    <div class="container mx-auto space-y-10 px-5 lg:py-10 2xl:px-0">
+      <!-- Skeleton -->
+      <div v-if="!artist.description && !artist.name" class="space-y-2">
+        <Skeleton class="h-3 w-3/4 rounded-full" />
+        <Skeleton class="h-3 w-full rounded-full" />
+        <Skeleton class="h-3 w-full rounded-full" />
+        <Skeleton class="h-3 w-3/4 rounded-full" />
+        <Skeleton class="h-3 w-2/4 rounded-full" />
+      </div>
+      <!-- Description -->
+      <section
+        v-if="artist.description"
+        class="text-sm leading-loose lg:max-w-3xl lg:px-0 xl:max-w-4xl xl:text-base"
+      >
+        <p>{{ artist.description }}</p>
+      </section>
+      <!-- Platforms -->
+      <section v-if="artist.platforms" class="space-y-2">
+        <p class="text-md font-black">Streaming Platforms</p>
         <div class="flex gap-2">
-          <CbExternalLink
+          <ComebackExternalLink
             v-for="social in artist.platforms"
             :key="social.name"
             :name="social.name"
@@ -182,11 +198,11 @@ useHead({
           />
         </div>
       </section>
-
+      <!-- Socials -->
       <section v-if="artist.socials" class="space-y-2">
-        <h2 class="text-xl font-black">Socials Media Platforms</h2>
+        <p class="text-md font-black">Socials Media Platforms</p>
         <div class="flex gap-2">
-          <CbExternalLink
+          <ComebackExternalLink
             v-for="social in artist.socials"
             :key="social.name"
             :name="social.name"
@@ -194,23 +210,9 @@ useHead({
           />
         </div>
       </section>
-
-      <section
-        v-if="!artist.description && !artist.name"
-        class="px-5 text-sm leading-loose lg:max-w-3xl lg:px-0 xl:max-w-5xl 2xl:max-w-6xl"
-      >
-        <p v-if="artist.description">{{ artist.description }}</p>
-        <div v-if="!artist.description && !artist.name" class="space-y-2">
-          <Skeleton class="h-3 w-3/4 rounded-full" />
-          <Skeleton class="h-3 w-full rounded-full" />
-          <Skeleton class="h-3 w-full rounded-full" />
-          <Skeleton class="h-3 w-3/4 rounded-full" />
-          <Skeleton class="h-3 w-2/4 rounded-full" />
-        </div>
-      </section>
-
+      <!-- Members List -->
       <section v-if="memberList?.length" class="space-y-2.5">
-        <h2 class="text-xl font-black">Members</h2>
+        <p class="text-md font-black">Members</p>
         <div
           class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
         >
@@ -225,9 +227,9 @@ useHead({
           />
         </div>
       </section>
-
+      <!-- Subunit List -->
       <section v-if="subunitList?.length" class="space-y-2.5">
-        <h2 class="text-xl font-black">Members</h2>
+        <p class="text-md font-black">Members</p>
         <div
           class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
         >
@@ -242,9 +244,9 @@ useHead({
           />
         </div>
       </section>
-
+      <!-- Groups List -->
       <section v-if="artist.groups?.length" class="space-y-2.5">
-        <h2 class="text-xl font-black">Groups</h2>
+        <p class="text-md font-black">Groups</p>
         <div
           class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
         >
@@ -259,9 +261,9 @@ useHead({
           />
         </div>
       </section>
-
+      <!-- Releases List -->
       <section v-if="artist.releases?.length" class="space-y-2.5">
-        <h2 class="text-xl font-black">Releases</h2>
+        <p class="text-md font-black">Releases</p>
         <div
           class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
         >

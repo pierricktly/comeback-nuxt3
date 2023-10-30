@@ -52,7 +52,7 @@ useHead({
         class="flex flex-col justify-center items-center space-y-5"
       >
         <div class="w-full">
-          <CbLabel label="Email" />
+          <ComebackLabel label="Email" />
           <input 
             type="email" 
             placeholder="Email" 
@@ -61,7 +61,7 @@ useHead({
           />
         </div>
         <div class="w-full">
-          <CbLabel label="Password" />
+          <ComebackLabel label="Password" />
           <input 
             type="password" 
             placeholder="Password" 
@@ -78,7 +78,7 @@ useHead({
         class="flex flex-col justify-center items-center space-y-5"
       >
         <div class="w-full">
-          <CbLabel label="Email" />
+          <ComebackLabel label="Email" />
           <input 
             type="email" 
             placeholder="Email" 
@@ -87,7 +87,7 @@ useHead({
           />
         </div>
         <div class="w-full">
-          <CbLabel label="Password" />
+          <ComebackLabel label="Password" />
           <input 
             type="password" 
             placeholder="Password" 
@@ -96,7 +96,7 @@ useHead({
           />
         </div>
         <div class="w-full">
-          <CbLabel label="Password Verification" />
+          <ComebackLabel label="Password Verification" />
           <input 
             type="password" 
             placeholder="Password Verification" 

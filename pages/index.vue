@@ -23,6 +23,17 @@ const { data: dataComebacks } = await useAsyncQuery(
     sort: 'date:asc',
   },
 )
+const { data: dataTodayComeback } = await useAsyncQuery(
+  gQuery.GRAPHQL_QUERY_GET_TODAY_COMEBACK,
+  {
+    filters: {
+      date: {
+        eq: new Date().toISOString().split('T')[0],
+        // eq: '2023-10-30',
+      },
+    },
+  },
+)
 
 const getListComeback = async () => {
   if (dataComebacks.value) {
@@ -37,9 +48,8 @@ const getListComeback = async () => {
 }
 
 const getRandomMusics = async () => {
-  const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_MUSICS_COUNT)
-  if (data.value) {
-    const totalNumber = data?.value?.musics.meta.pagination.total - 1
+  if (dataRandomMusics.value) {
+    const totalNumber = dataRandomMusics?.value?.musics.meta.pagination.total - 1
     const randomNumbers: number[] = []
     while (randomNumbers.length < 5) {
       const randomNumber = Math.floor(Math.random() * totalNumber)
@@ -68,17 +78,9 @@ const getRandomMusics = async () => {
 }
 
 const getTodayComebacks = async () => {
-  const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_GET_TODAY_COMEBACK, {
-    filters: {
-      date: {
-        eq: new Date().toISOString().split('T')[0],
-        // eq: '2023-10-30',
-      },
-    },
-  })
-  if (data.value) {
+  if (dataTodayComeback.value) {
     // @ts-ignore
-    data.value.comebacks.data.map((comeback: any) => {
+    dataTodayComeback.value.comebacks.data.map((comeback: any) => {
       formatComebackObject(comeback).then((cb) => {
         newsToday.value.push(cb)
       })
@@ -180,31 +182,12 @@ const formatMusicObject = async (music: any) => {
   return m
 }
 
-function getDaysUntil(dateString: string): number {
-  const today = new Date()
-  const futureDate = new Date(dateString)
-  const timeDifference = futureDate.getTime() - today.getTime()
-  const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24))
-  return daysDifference
-}
-
-//if date in argument is today return true
-function isToday(dateString: string): boolean {
-  const today = new Date()
-  const futureDate = new Date(dateString)
-  return (
-    today.getFullYear() === futureDate.getFullYear() &&
-    today.getMonth() === futureDate.getMonth() &&
-    today.getDate() === futureDate.getDate()
-  )
-}
-
 onMounted(async () => {
-  await getRandomMusics()
   await getTodayComebacks()
+  await getRandomMusics()
+  await getListComeback()
   await getLastRelease()
   await getLastArtistAdded()
-  await getListComeback()
 })
 
 useHead({
@@ -271,58 +254,49 @@ useHead({
 </script>
 
 <template>
-  <div class="container mx-auto pt-8 lg:px-10 lg:pt-12">
+  <div class="container mx-auto lg:px-10">
     <!-- Slider Block -->
     <ComebackSlider :newsToday="newsToday" class="pb-8 lg:pb-12" />
-    <!-- Random Songs Block -->
-    <div class="grid grid-cols-1 gap-5 px-5 pb-8 lg:grid-cols-2 lg:px-0 lg:pb-12">
+    <!-- Random Songs & Comeback Block -->
+    <div class="grid grid-cols-1 gap-5 px-5 pb-8 md:px-0 lg:grid-cols-2 lg:pb-12">
+      <!-- Random Songs Block -->
       <div class="w-full rounded bg-quaternary p-3">
         <p class="pb-3 text-center text-xl font-bold">Discover Music</p>
-        <div class="space-y-2">
+        <div v-if="randomSongs.length" class="space-y-2">
           <MusicDisplay
             v-for="song in randomSongs"
             :key="song.id"
             :albumId="song.releases[0].id"
+            :albumName="song.releases[0].name"
             :artistId="song.artists[0].id"
-            :musicId="song.id"
+            :artistName="song.artists[0].name"
+            :artistImage="song.artists[0].images[0]"
+            :musicId="song.videoId"
             :musicName="song.name"
             :musicImage="song.images[2]"
-            :artistName="song.artists[0].name"
-            :albumName="song.releases[0].name"
             :duration="song.duration"
-            :musicVideoId="song.videoId"
             class="w-full bg-quinary"
           />
         </div>
+        <div v-else class="space-y-2">
+          <Skeleton v-for="i in 5" class="h-10 w-full rounded" />
+        </div>
       </div>
-
+      <!-- Comeback Block -->
       <div class="w-full rounded bg-quaternary p-3">
         <p class="pb-3 text-center text-xl font-bold">Comeback</p>
-        <div class="space-y-2">
-          <div
+        <div v-if="comebackList.length" class="space-y-2">
+          <CardComeback
             v-for="comeback in comebackList"
             :key="comeback.id"
-            class="flex w-full justify-between overflow-hidden rounded bg-quinary text-xs"
-          >
-            <div class="flex gap-1">
-              <p
-                class="p-1 px-1.5"
-                :class="
-                  isToday(comeback.date)
-                    ? 'bg-primary'
-                    : 'bg-tertiary font-bold text-secondary'
-                "
-              >
-                {{
-                  isToday(comeback.date) ? 'Today' : `D-${getDaysUntil(comeback.date)}`
-                }}
-              </p>
-              <p class="p-1">{{ comeback.artist.name }}</p>
-            </div>
-            <p class="p-1 pr-2">
-              {{ comeback.message }}
-            </p>
-          </div>
+            :date="comeback.date"
+            :artistName="comeback.artist.name"
+            :message="comeback.message"
+            :artistId="comeback.artist.id"
+          />
+        </div>
+        <div v-else class="space-y-2">
+          <Skeleton v-for="i in 10" class="h-5 w-full rounded" />
         </div>
       </div>
     </div>

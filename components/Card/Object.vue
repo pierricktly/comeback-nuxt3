@@ -1,7 +1,7 @@
 <template>
   <NuxtLink
     :to="objectLink"
-    class="group min-w-[10rem] max-w-[10rem] space-y-3 rounded bg-quaternary p-4 shadow-xl shadow-secondary transition-all duration-500 ease-in-out hover:bg-quinary 2xl:min-w-[11rem] 2xl:max-w-[11rem]"
+    class="group min-w-[10rem] max-w-[10rem] space-y-3 rounded bg-quaternary p-4 shadow-xl shadow-secondary transition-all duration-500 ease-in-out hover:bg-quinary"
   >
     <div class="relative">
       <div
@@ -20,14 +20,14 @@
       <p class="font-semibol truncate group-hover:underline">
         {{ mainTitle }}
       </p>
-      <p v-if="isArtist" class="truncate text-sm">{{ subTitle }}</p>
       <NuxtLink
-        v-else
+        v-if="!isArtist"
         :to="`/artist/${artistId}`"
         class="truncate text-sm hover:underline lg:text-base"
       >
         {{ subTitle }}
       </NuxtLink>
+      <p v-else class="truncate text-sm">{{ subTitle }}</p>
     </div>
   </NuxtLink>
 </template>
