@@ -28,17 +28,17 @@ export default defineNuxtConfig({
     transpile: ['vue-toastification', '@vuepic/vue-datepicker'],
   },
 
-  // apollo: {
-  //   authType: 'Bearer',
-  //   authHeader: 'Authorization',
-  //   tokenStorage: 'cookie',
-  //   clients: {
-  //     default: {
-  //       tokenName: 'STRAPI_KEY',
-  //       httpEndpoint: process.env.STRAPI_URL + '/graphql',
-  //     },
-  //   },
-  // },
+  apollo: {
+    authType: 'Bearer',
+    authHeader: 'Authorization',
+    tokenStorage: 'cookie',
+    clients: {
+      default: {
+        tokenName: 'STRAPI_KEY',
+        httpEndpoint: process.env.STRAPI_URL + '/graphql',
+      },
+    },
+  },
 
   pinia: {
     autoImports: ['defineStore'],
