@@ -98,7 +98,7 @@ useHead({
             format="webp"
             :alt="release.name"
             :src="release.images[release.images.length - 1]"
-            class="hidden max-w-[12rem] rounded md:block lg:max-w-[20rem]"
+            class="hidden aspect-square max-w-[12rem] rounded md:block lg:max-w-[20rem]"
           />
           <Skeleton
             v-else
