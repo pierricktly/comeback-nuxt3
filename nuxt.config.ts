@@ -29,6 +29,8 @@ export default defineNuxtConfig({
   },
 
   apollo: {
+    autoImports: true,
+    proxyCookies: true,
     authType: 'Bearer',
     authHeader: 'Authorization',
     tokenStorage: 'cookie',
