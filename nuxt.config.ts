@@ -37,7 +37,7 @@ export default defineNuxtConfig({
     clients: {
       default: {
         tokenName: 'STRAPI_KEY',
-        httpEndpoint: process.env.STRAPI_URL + '/graphql',
+        httpEndpoint: process.env.STRAPI_URL + '/graphql' || 'http://127.0.0.1:1337/graphql',
       },
     },
   },
