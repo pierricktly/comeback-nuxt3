@@ -3,9 +3,8 @@ export default defineNuxtConfig({
   ssr: true,
 
   runtimeConfig: {
-    public: {
-      STRAPI_URL: process.env.STRAPI_URL,
-    },
+    STRAPI_URL: process.env.STRAPI_URL,
+    STRAPI_KEY: process.env.STRAPI_KEY,
   },
 
   modules: [
@@ -30,9 +29,12 @@ export default defineNuxtConfig({
   },
 
   apollo: {
-    autoImports: true,
+    authType: 'Bearer',
+    authHeader: 'Authorization',
+    tokenStorage: 'cookie',
     clients: {
       default: {
+        tokenName: 'STRAPI_KEY',
         httpEndpoint: process.env.STRAPI_URL + '/graphql',
       },
     },
