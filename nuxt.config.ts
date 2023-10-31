@@ -1,5 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  ssr: true,
+
   runtimeConfig: {
     public: {
       STRAPI_URL: process.env.STRAPI_URL,
@@ -13,7 +15,6 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@pinia-plugin-persistedstate/nuxt',
     'nuxt-swiper',
-    // 'nuxt-vuefire',
   ],
 
   devtools: {
@@ -25,7 +26,6 @@ export default defineNuxtConfig({
   },
 
   build: {
-    // vue-toastification - old commonjs module
     transpile: ['vue-toastification', '@vuepic/vue-datepicker'],
   },
 
@@ -37,8 +37,6 @@ export default defineNuxtConfig({
       },
     },
   },
-
-  ssr: false,
 
   pinia: {
     autoImports: ['defineStore'],
