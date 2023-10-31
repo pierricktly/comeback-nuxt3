@@ -325,3 +325,18 @@ export const GRAPHQL_QUERY_GET_RELEASE_BY_ID = gql`
     }
   }
 `
+
+export const GRAPHQL_QUERY_GET_RELEASES_BY_ARTIST_ID = gql`
+  query Query($filters: ReleaseFiltersInput) {
+    releases(filters: $filters) {
+      data {
+        id
+        attributes {
+          name
+          images
+          type
+        }
+      }
+    }
+  }
+`
