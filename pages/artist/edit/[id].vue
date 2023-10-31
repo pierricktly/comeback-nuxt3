@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import {
-  GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT,
-  GRAPHQL_QUERY_GET_ALL_ARTISTS,
-  GRAPHQL_MUTATION_UPDATE_ARTIST,
-} from '@/constants/graphql'
-import VueMultiselect from 'vue-multiselect'
-import _ from 'lodash'
+// import {
+//   GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT,
+//   GRAPHQL_QUERY_GET_ALL_ARTISTS,
+//   GRAPHQL_MUTATION_UPDATE_ARTIST,
+// } from '@/constants/graphql'
+// import VueMultiselect from 'vue-multiselect'
+// import _ from 'lodash'
 import type { Artist } from '@/types/artist'
 
 // Original Data
@@ -19,131 +19,131 @@ const stylesList = ref(null)
 const isUploadingEdit = ref(false)
 const route = useRoute()
 
-// Get artist data from graphql
-const { data }: any = await useAsyncQuery(GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT, {
-  artistId: route.params.id,
-}).catch((error) => {
-  console.log(error)
-})
+// // Get artist data from graphql
+// const { data }: any = await useAsyncQuery(GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT, {
+//   artistId: route.params.id,
+// }).catch((error) => {
+//   console.log(error)
+// })
 
-const { data: dataAllArtists }: any = await useAsyncQuery(
-  GRAPHQL_QUERY_GET_ALL_ARTISTS,
-).catch((error) => {
-  console.log(error)
-})
+// const { data: dataAllArtists }: any = await useAsyncQuery(
+//   GRAPHQL_QUERY_GET_ALL_ARTISTS,
+// ).catch((error) => {
+//   console.log(error)
+// })
 
-const { mutate } = useMutation(GRAPHQL_MUTATION_UPDATE_ARTIST)
+// const { mutate } = useMutation(GRAPHQL_MUTATION_UPDATE_ARTIST)
 
-const formatArtistData = async (artistData: any) => {
-  if (!artistData) return {} as Artist;
+// const formatArtistData = async (artistData: any) => {
+//   if (!artistData) return {} as Artist;
 
-  const { attributes } = artistData;
-  const artistTmp: Artist = {
-    id: artistData.id,
-    idYoutubeMusic: attributes.idYoutubeMusic || '',
-    name: attributes.name,
-    description: attributes.description || '',
-    type: attributes.type,
-    images: attributes.images,
-    styles: attributes.styles || [],
-    socials: attributes.socials || [],
-    platforms: attributes.platforms || [],
-    members: attributes.members ? await formatArray(attributes.members.data, formatMiniArtistObject) : [],
-    groups: attributes.groups ? await formatArray(attributes.groups.data, formatMiniArtistObject) : []
-  };
+//   const { attributes } = artistData;
+//   const artistTmp: Artist = {
+//     id: artistData.id,
+//     idYoutubeMusic: attributes.idYoutubeMusic || '',
+//     name: attributes.name,
+//     description: attributes.description || '',
+//     type: attributes.type,
+//     images: attributes.images,
+//     styles: attributes.styles || [],
+//     socials: attributes.socials || [],
+//     platforms: attributes.platforms || [],
+//     members: attributes.members ? await formatArray(attributes.members.data, formatMiniArtistObject) : [],
+//     groups: attributes.groups ? await formatArray(attributes.groups.data, formatMiniArtistObject) : []
+//   };
 
-  return artistTmp;
-};
+//   return artistTmp;
+// };
 
-const formatArray = async (array: any[], formatter: Function) => {
-  return await Promise.all(array.map(async item => await formatter(item)));
-};
+// const formatArray = async (array: any[], formatter: Function) => {
+//   return await Promise.all(array.map(async item => await formatter(item)));
+// };
 
-const formatMiniArtistObject = async (artist: any) => {
-  let a = {} as Artist
+// const formatMiniArtistObject = async (artist: any) => {
+//   let a = {} as Artist
 
-  a.id = artist.id
-  a.name = artist.attributes.name
-  a.images = artist.attributes.images
-  a.type = artist.attributes.type
+//   a.id = artist.id
+//   a.name = artist.attributes.name
+//   a.images = artist.attributes.images
+//   a.type = artist.attributes.type
 
-  return a
-}
+//   return a
+// }
 
-const compareFields = (field1: any, field2: any) => {
-  return _.isEqual(field1, field2)
-}
+// const compareFields = (field1: any, field2: any) => {
+//   return _.isEqual(field1, field2)
+// }
 
-const updateArtist = async () => {
-  // isUploadingEdit.value = true
-  const updatedFields: Partial<Artist> = {}
+// const updateArtist = async () => {
+//   // isUploadingEdit.value = true
+//   const updatedFields: Partial<Artist> = {}
 
-  Object.keys(artistToEdit.value).forEach((key) => {
-    if (!compareFields(artistToEdit.value[key], artistGQ.value[key])) {
-      updatedFields[key] = artistToEdit.value[key]
-    }
-  })
+//   Object.keys(artistToEdit.value).forEach((key) => {
+//     if (!compareFields(artistToEdit.value[key], artistGQ.value[key])) {
+//       updatedFields[key] = artistToEdit.value[key]
+//     }
+//   })
 
-  // if artistToEdit doesn't have any field to update then return
-  if (Object.keys(artistToEdit.value).length == 0) {
-    console.log('artistToEdit', artistToEdit.value)
-    return
-  }
+//   // if artistToEdit doesn't have any field to update then return
+//   if (Object.keys(artistToEdit.value).length == 0) {
+//     console.log('artistToEdit', artistToEdit.value)
+//     return
+//   }
 
-  if (updatedFields.groups) {
-    let groupsTmp: string[] = []
-    updatedFields.groups.map((group: Artist) => {
-      groupsTmp.push(group.id)
-    })
-    console.log('groupsTmp', groupsTmp)
-    updatedFields.groups = groupsTmp
-  }
+//   if (updatedFields.groups) {
+//     let groupsTmp: string[] = []
+//     updatedFields.groups.map((group: Artist) => {
+//       groupsTmp.push(group.id)
+//     })
+//     console.log('groupsTmp', groupsTmp)
+//     updatedFields.groups = groupsTmp
+//   }
 
-  if (updatedFields.members) {
-    let membersTmp: string[] = []
-    updatedFields.members.map((member: Artist) => {
-      membersTmp.push(member.id)
-    })
-    console.log('membersTmp', membersTmp)
-    updatedFields.members = membersTmp
-  }
+//   if (updatedFields.members) {
+//     let membersTmp: string[] = []
+//     updatedFields.members.map((member: Artist) => {
+//       membersTmp.push(member.id)
+//     })
+//     console.log('membersTmp', membersTmp)
+//     updatedFields.members = membersTmp
+//   }
 
-  const response = await mutate({
-    data: updatedFields,
-    updateArtistId: route.params.id,
-  })
-    .then((response) => {
-      console.log(response)
-      // isUploadingEdit.value = false
-      // redirect to artist page
-      const router = useRouter()
-      router.push(`/artist/${route.params.id}`)
-    })
-    .catch((error) => {
-      console.log(error)
-    })
-}
+//   const response = await mutate({
+//     data: updatedFields,
+//     updateArtistId: route.params.id,
+//   })
+//     .then((response) => {
+//       console.log(response)
+//       // isUploadingEdit.value = false
+//       // redirect to artist page
+//       const router = useRouter()
+//       router.push(`/artist/${route.params.id}`)
+//     })
+//     .catch((error) => {
+//       console.log(error)
+//     })
+// }
 
-onMounted(async () => {
-  // fetch data
-  const artistData = data.value?.artist?.data;
-  artistGQ.value = await formatArtistData(artistData);
-  artistToEdit.value = _.cloneDeep(await formatArtistData(artistData));
+// onMounted(async () => {
+//   // fetch data
+//   const artistData = data.value?.artist?.data;
+//   artistGQ.value = await formatArtistData(artistData);
+//   artistToEdit.value = _.cloneDeep(await formatArtistData(artistData));
 
-  if (dataAllArtists.value) {
-    artistList.value = await Promise.all(
-      dataAllArtists.value.artists.data.map(async (member: any) => {
-        return await formatMiniArtistObject(member)
-      }),
-    )
-    // remove artistGQ from artistList
-    if (artistList.value) {
-      artistList.value = artistList.value?.filter((artist: Artist) => {
-        return artist.id != artistGQ.value.id
-      })
-    }
-  }
-})
+//   if (dataAllArtists.value) {
+//     artistList.value = await Promise.all(
+//       dataAllArtists.value.artists.data.map(async (member: any) => {
+//         return await formatMiniArtistObject(member)
+//       }),
+//     )
+//     // remove artistGQ from artistList
+//     if (artistList.value) {
+//       artistList.value = artistList.value?.filter((artist: Artist) => {
+//         return artist.id != artistGQ.value.id
+//       })
+//     }
+//   }
+// })
 </script>
 
 <template>

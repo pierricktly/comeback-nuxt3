@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { GRAPHQL_QUERY_GET_ALL_ARTISTS } from '@/constants/graphql'
-import type { Artist } from './types/artist'
+// import { GRAPHQL_QUERY_GET_ALL_ARTISTS } from '@/constants/graphql'
+// import type { Artist } from './types/artist'
 
-// get token from runtime config
-const { STRAPI_KEY } = useRuntimeConfig();
+// // get token from runtime config
+// const { STRAPI_KEY } = useRuntimeConfig();
 
-// init cookie for github token
-const cookie = useCookie("STRAPI_KEY");
+// // init cookie for github token
+// const cookie = useCookie("STRAPI_KEY");
 
-// set cookie value if not set
-cookie.value = cookie.value || STRAPI_KEY;
+// // set cookie value if not set
+// cookie.value = cookie.value || STRAPI_KEY;
 
-const artistList = useArtistList()
-const { formatArtistData } = useGeneralFunction()
-const { data, error, refresh } = await useAsyncQuery(GRAPHQL_QUERY_GET_ALL_ARTISTS)
-await data?.value?.artists?.data.map(async (artist) => {
-  artistList.value.push(await formatArtistData(artist))
-})
+// const artistList = useArtistList()
+// const { formatArtistData } = useGeneralFunction()
+// const { data, error, refresh } = await useAsyncQuery(GRAPHQL_QUERY_GET_ALL_ARTISTS)
+// await data?.value?.artists?.data.map(async (artist) => {
+//   artistList.value.push(await formatArtistData(artist))
+// })
 </script>
 
 <template>
