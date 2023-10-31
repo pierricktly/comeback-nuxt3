@@ -5,6 +5,8 @@
 .cache
 dist
 package-lock.json
+service-account.json
+firebase.json
 
 # Node dependencies
 node_modules
@@ -23,6 +25,3 @@ logs
 .env.*
 !.env.example
 .npmrc
-
-service-account.json
-firebase.json

@@ -20,9 +20,12 @@ const isUploadingEdit = ref(false)
 const route = useRoute()
 
 // Get artist data from graphql
-const { data }: any = await useAsyncQuery(GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT, {
-  artistId: route.params.id,
-}).catch((error) => {
+const { data, error, refresh }: any = await useAsyncQuery(
+  GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT,
+  {
+    artistId: route.params.id,
+  },
+).catch((error) => {
   console.log(error)
 })
 
@@ -35,9 +38,9 @@ const { data: dataAllArtists }: any = await useAsyncQuery(
 const { mutate } = useMutation(GRAPHQL_MUTATION_UPDATE_ARTIST)
 
 const formatArtistData = async (artistData: any) => {
-  if (!artistData) return {} as Artist;
+  if (!artistData) return {} as Artist
 
-  const { attributes } = artistData;
+  const { attributes } = artistData
   const artistTmp: Artist = {
     id: artistData.id,
     idYoutubeMusic: attributes.idYoutubeMusic || '',
@@ -48,16 +51,20 @@ const formatArtistData = async (artistData: any) => {
     styles: attributes.styles || [],
     socials: attributes.socials || [],
     platforms: attributes.platforms || [],
-    members: attributes.members ? await formatArray(attributes.members.data, formatMiniArtistObject) : [],
-    groups: attributes.groups ? await formatArray(attributes.groups.data, formatMiniArtistObject) : []
-  };
+    members: attributes.members
+      ? await formatArray(attributes.members.data, formatMiniArtistObject)
+      : [],
+    groups: attributes.groups
+      ? await formatArray(attributes.groups.data, formatMiniArtistObject)
+      : [],
+  }
 
-  return artistTmp;
-};
+  return artistTmp
+}
 
 const formatArray = async (array: any[], formatter: Function) => {
-  return await Promise.all(array.map(async item => await formatter(item)));
-};
+  return await Promise.all(array.map(async (item) => await formatter(item)))
+}
 
 const formatMiniArtistObject = async (artist: any) => {
   let a = {} as Artist
@@ -126,9 +133,9 @@ const updateArtist = async () => {
 
 onMounted(async () => {
   // fetch data
-  const artistData = data.value?.artist?.data;
-  artistGQ.value = await formatArtistData(artistData);
-  artistToEdit.value = _.cloneDeep(await formatArtistData(artistData));
+  const artistData = data.value?.artist?.data
+  artistGQ.value = await formatArtistData(artistData)
+  artistToEdit.value = _.cloneDeep(await formatArtistData(artistData))
 
   if (dataAllArtists.value) {
     artistList.value = await Promise.all(

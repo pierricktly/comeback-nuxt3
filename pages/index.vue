@@ -36,6 +36,8 @@ const { data: dataTodayComeback } = await useAsyncQuery(
   },
 )
 
+console.log(dataRandomMusics)
+
 const getListComeback = async () => {
   if (dataComebacks.value) {
     // @ts-ignore
@@ -89,7 +91,9 @@ const getTodayComebacks = async () => {
 }
 
 const getLastRelease = async () => {
-  const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_LATEST_RELEASE)
+  const { data, error, refresh } = await useAsyncQuery(
+    gQuery.GRAPHQL_QUERY_LATEST_RELEASE,
+  )
   if (data.value) {
     // @ts-ignore
     data.value.releases.data.map((release: any) => {
@@ -101,7 +105,9 @@ const getLastRelease = async () => {
 }
 
 const getLastArtistAdded = async () => {
-  const { data } = await useAsyncQuery(gQuery.GRAPHQL_QUERY_LATEST_ARTIST_CREATE)
+  const { data, error, refresh } = await useAsyncQuery(
+    gQuery.GRAPHQL_QUERY_LATEST_ARTIST_CREATE,
+  )
   if (data.value) {
     // @ts-ignore
     data.value.artists.data.map((artist: any) => {

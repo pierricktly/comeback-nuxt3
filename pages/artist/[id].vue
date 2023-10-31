@@ -10,7 +10,7 @@ const route = useRoute()
 const artist = ref<Artist>({} as Artist)
 const imageLoaded = ref(false)
 
-const { data } = await useAsyncQuery(GRAPHQL_QUERY_GET_ARTIST_BY_ID, {
+const { data, error, refresh } = await useAsyncQuery(GRAPHQL_QUERY_GET_ARTIST_BY_ID, {
   // artistId: '34',
   artistId: route.params.id,
 }).catch((error: any) => {
@@ -170,7 +170,9 @@ useHead({
       </div>
     </div>
     <!--  Artist Data -->
-    <div class="container mx-auto space-y-10 pb-10 px-5 sm:px-0 md:px-5 md:py-10 2xl:px-0">
+    <div
+      class="container mx-auto space-y-10 px-5 pb-10 sm:px-0 md:px-5 md:py-10 2xl:px-0"
+    >
       <!-- Skeleton -->
       <div v-if="!artist.description && !artist.name" class="space-y-2">
         <Skeleton class="h-3 w-3/4 rounded-full" />

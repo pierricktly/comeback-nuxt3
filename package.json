@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-app",
+  "name": "comeback",
   "private": true,
   "scripts": {
     "build": "nuxt build",

@@ -16,7 +16,7 @@ const release = ref<Release>({} as Release)
 const artistRelease = ref<Release[]>([] as Release[])
 const imageLoaded = ref(false)
 
-const { data } = await useAsyncQuery(GRAPHQL_QUERY_GET_RELEASE_BY_ID, {
+const { data, error, refresh } = await useAsyncQuery(GRAPHQL_QUERY_GET_RELEASE_BY_ID, {
   releaseId: route.params.id,
 }).catch((error: any) => {
   console.log(error)
