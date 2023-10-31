@@ -25,33 +25,33 @@ const { link, name } = defineProps({
 
 const icon = computed(() => {
   if (link.includes('youtube') && link.includes('music.')) {
-    return '../public/youtube_music.png'
+    return '../youtube_music.png'
   } else if (link.includes('youtube')) {
-    return '../public/youtube.png'
+    return '../youtube.png'
   } else if (link.includes('apple') && link.includes('music')) {
-    return '../public/apple_music.png'
+    return '../apple_music.png'
   } else if (link.includes('spotify')) {
-    return '../public/spotify.png'
+    return '../spotify.png'
   } else if (link.includes('tidal')) {
-    return '../public/tidal.png'
+    return '../tidal.png'
   } else if (link.includes('soundcloud')) {
-    return '../public/sound_cloud.png'
+    return '../sound_cloud.png'
   } else if (link.includes('facebook')) {
-    return '../public/facebook.png'
+    return '../facebook.png'
   } else if (link.includes('instagram')) {
-    return '../public/instagram.png'
+    return '../instagram.png'
   } else if (link.includes('twitter') || link.includes('x.com')) {
-    return '../public/x.png'
+    return '../x.png'
   } else if (link.includes('tiktok')) {
-    return '../public/tiktok.png'
+    return '../tiktok.png'
   } else if (link.includes('snapchat')) {
-    return '../public/snapchat.png'
+    return '../snapchat.png'
   } else if (link.includes('weibo')) {
-    return '../public/weibo.png'
+    return '../weibo.png'
   } else if (link.includes('deezer')) {
-    return '../public/deezer.png'
+    return '../deezer.png'
   } else {
-    return '../public/default.png'
+    return '../default.png'
   }
 })
 
@@ -63,31 +63,31 @@ const icon = computed(() => {
 
 // function selectIcon() {
 //   if (link.includes('youtube') && link.includes('music.')) {
-//     icon.value = '../public/youtube_music.png'
+//     icon.value = '../youtube_music.png'
 //   } else if (link.includes('youtube')) {
-//     icon.value = '../public/youtube.png'
+//     icon.value = '../youtube.png'
 //   } else if (link.includes('apple') && link.includes('music')) {
-//     icon.value = '../public/apple_music.png'
+//     icon.value = '../apple_music.png'
 //   } else if (link.includes('spotify')) {
-//     icon.value = '../public/spotify.png'
+//     icon.value = '../spotify.png'
 //   } else if (link.includes('tidal')) {
-//     icon.value = '../public/tidal.png'
+//     icon.value = '../tidal.png'
 //   } else if (link.includes('soundcloud')) {
-//     icon.value = '../public/sound_cloud.png'
+//     icon.value = '../sound_cloud.png'
 //   } else if (link.includes('facebook')) {
-//     icon.value = '../public/facebook.png'
+//     icon.value = '../facebook.png'
 //   } else if (link.includes('instagram')) {
-//     icon.value = '../public/instagram.png'
+//     icon.value = '../instagram.png'
 //   } else if (link.includes('twitter') || link.includes('x.com')) {
-//     icon.value = '../public/x.png'
+//     icon.value = '../x.png'
 //   } else if (link.includes('tiktok')) {
-//     icon.value = '../public/tiktok.png'
+//     icon.value = '../tiktok.png'
 //   } else if (link.includes('snapchat')) {
-//     icon.value = '../public/snapchat.png'
+//     icon.value = '../snapchat.png'
 //   } else if (link.includes('weibo')) {
-//     icon.value = '../public/weibo.png'
+//     icon.value = '../weibo.png'
 //   } else {
-//     icon.value = '../public/default.png'
+//     icon.value = '../default.png'
 //   }
 // }
 </script>
