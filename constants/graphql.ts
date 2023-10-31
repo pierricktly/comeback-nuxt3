@@ -117,26 +117,26 @@ export const GRAPHQL_QUERY_GET_TODAY_COMEBACK = gql`
 `
 
 export const GRAPHQL_QUERY_GET_COMEBACK_AFTER_TODAY = gql`
-query Query($filters: ComebackFiltersInput, $sort: [String]) {
-  comebacks(filters: $filters, sort: $sort) {
-    data {
-      id
-      attributes {
-        date
-        message
-        artist {
-          data {
-            id
-            attributes {
-              name
-              images
+  query Query($filters: ComebackFiltersInput, $sort: [String]) {
+    comebacks(filters: $filters, sort: $sort) {
+      data {
+        id
+        attributes {
+          date
+          message
+          artist {
+            data {
+              id
+              attributes {
+                name
+                images
+              }
             }
           }
         }
       }
     }
   }
-}
 `
 
 export const GRAPHQL_QUERY_GET_ARTIST_BY_ID = gql`
@@ -279,6 +279,44 @@ export const GRAPHQL_MUTATION_UPDATE_ARTIST = gql`
                 name
                 images
                 type
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
+export const GRAPHQL_QUERY_GET_RELEASE_BY_ID = gql`
+  query Query($releaseId: ID) {
+    release(id: $releaseId) {
+      data {
+        id
+        attributes {
+          name
+          idYoutubeMusic
+          dateRelease
+          type
+          year
+          platforms
+          images
+          artists {
+            data {
+              id
+              attributes {
+                name
+                images
+              }
+            }
+          }
+          music {
+            data {
+              id
+              attributes {
+                name
+                duration
+                videoId
               }
             }
           }

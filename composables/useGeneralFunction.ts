@@ -1,4 +1,6 @@
 import type { Artist } from '~/types/artist'
+import type { Release } from '~/types/release'
+import type { Music  } from '~/types/music'
 
 export function useGeneralFunction() {
   // create hello world
@@ -17,7 +19,7 @@ export function useGeneralFunction() {
       name: attributes.name,
       description: attributes.description || '',
       type: attributes.type,
-      images: attributes.images,
+      images: attributes.images || [],
       styles: attributes.styles || [],
       socials: attributes.socials || [],
       platforms: attributes.platforms || [],
@@ -27,10 +29,61 @@ export function useGeneralFunction() {
       groups: attributes.groups
         ? await formatArray(attributes.groups.data, formatArtistData)
         : [],
+      releases: []
     }
 
     return artistTmp
   }
+
+  const formatReleaseData = async (releaseData: any) => {
+    if (!releaseData) return {} as Release
+
+    const { attributes } = releaseData
+
+    const releaseTmp: Release = {
+      id: releaseData.id,
+      idYoutubeMusic: attributes.idYoutubeMusic,
+      name: attributes.name,
+      type: attributes.type,
+      year: attributes.year,
+      verified: attributes.verified,
+      platforms: attributes.platforms || [],
+      dateRelease: attributes.dateRelease,
+      images: attributes.images || [],
+
+      artists: attributes.artists
+        ? await formatArray(attributes.artists.data, formatArtistData)
+        : [],
+      music: attributes.music
+        ? await formatArray(attributes.music.data, formatMusicData)
+        : [],
+    }
+
+    return releaseTmp
+  }
+
+  const formatMusicData = async (musicData: any) => {
+    if (!musicData) return {} as Music
+
+    const { attributes } = musicData
+
+    const musicTmp: Music = {
+      id: musicData.id,
+      videoId: attributes.videoId,
+      name: attributes.name,
+      duration: attributes.duration,
+      images: attributes.images || [],
+      artists: attributes.artists
+        ? await formatArray(attributes.artists.data, formatArtistData)
+        : [],
+      releases: attributes.releases
+        ? await formatArray(attributes.releases.data, formatReleaseData)
+        : [],
+    }
+
+    return musicTmp
+  }
+    
 
   const formatArray = async (array: any[], formatter: Function) => {
     return await Promise.all(array.map(async (item) => await formatter(item)))
@@ -40,5 +93,7 @@ export function useGeneralFunction() {
   return {
     helloWorld,
     formatArtistData,
+    formatReleaseData,
+    formatMusicData,
   }
 }

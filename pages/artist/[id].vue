@@ -13,7 +13,7 @@ const imageLoaded = ref(false)
 const { data } = await useAsyncQuery(GRAPHQL_QUERY_GET_ARTIST_BY_ID, {
   // artistId: '34',
   artistId: route.params.id,
-}).catch((error) => {
+}).catch((error: any) => {
   console.log(error)
 })
 
@@ -65,7 +65,7 @@ const formatReleaseObject = async (release: any) => {
   r.id = release.id
   r.name = release.attributes.name
   r.type = release.attributes.type
-  r.date = release.attributes.dateRelease
+  r.dateRelease = release.attributes.dateRelease
   r.images = release.attributes.images
 
   return r

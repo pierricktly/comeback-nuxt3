@@ -1,75 +1,64 @@
-<!-- <script setup>
-const idYoutubeVideo = useIdYoutubeVideo()
-const isPlayingVideo = useIsPlayingVideo()
+<script setup lang="ts">
+import { GRAPHQL_QUERY_GET_RELEASE_BY_ID } from '@/constants/graphql'
+import { type Artist } from '@/types/artist'
+import { type Release } from '@/types/release'
+
 const title = ref('Release Page')
 const description = ref('Release')
-const release = ref(null)
+const route = useRoute()
 
-const playVideo = (videoId) => {
-  idYoutubeVideo.value = videoId
-  isPlayingVideo.value = true
+const { formatReleaseData } = useGeneralFunction()
+
+const release = ref<Release>({} as Release)
+const imageLoaded = ref(false)
+
+const { data } = await useAsyncQuery(GRAPHQL_QUERY_GET_RELEASE_BY_ID, {
+  releaseId: route.params.id,
+}).catch((error: any) => {
+  console.log(error)
+})
+
+if (data.value) {
+  const releaseData = data.value.release.data
+  release.value = await formatReleaseData(releaseData)
 }
 
 onMounted(async () => {
-  const route = useRoute()
-  release.value = await fetchReleaseById(route.params.id)
-  title.value = release.value.name + ' by ' + release.value.artistsName
-  description.value = release.value.name + ' by ' + release.value.artistsName
+  title.value = release.value.name + ' by ' + release.value.artists[0].name
+  description.value = release.value.name + ' by ' + release.value.artists[0].name
 })
 
 useHead({
   title,
-  meta: [{
-    name: 'description',
-    content: description
-  }]
+  meta: [
+    {
+      name: 'description',
+      content: description,
+    },
+  ],
 })
 </script>
 
 <template>
-  <div v-if="release" class="min-h-[calc(100vh-60px)] container mx-auto w-full p-5 lg:flex lg:items-center">
-    <div class="mx-auto w-fit space-y-5">
-      <div class="space-y-1">
-        <h1 class="text-3xl font-semibold">{{ release.name }}</h1>
-        <div class="flex gap-2">
-          <p>{{ release.type }} -</p>
-          <nuxt-link :to="`/artist/${release.artistsId}`">
-            <h2 class="hover-underline-animation">
-              {{ release.artistsName }}
-            </h2>
-          </nuxt-link>
-        </div>
-        <div v-if="release.platforms" class="flex flex-wrap gap-3">
-          <a v-for="(platform, index) in release.platforms" :key="platform + '_' + index" :href="platform"
-            target="_blank">
-            <icon-youtube-music class="h-6 w-6" />
-          </a>
-        </div>
-      </div>
-      <div class="flex w-fit flex-col gap-10 lg:flex-row">
-        <div class="mx-auto h-fit w-fit">
-          <nuxt-img :src="release.image" :alt="release.name" quality="80" loading="lazy" class="h-1/3 rounded-md bg-gray-300 shadow-2xl shadow-quinary" />
-        </div>
-        <div class="overflow-hidden pr-5 pb-2 lg:h-[34rem] lg:w-[30rem]">
-          <ul class="space-y-5">
-            <li 
-              v-for="music in release.musics.slice().reverse()"
-              :key="music.id"
-              target="_blank"
-              class="flex items-center justify-between gap-5"
-            >
-              <h3 class="font-semibold text-xl">{{ music.name }}</h3>
-              <button
-                @click="playVideo(music.videoId)"
-                class="rounded px-2 uppercase text-xs font-semibold hover:bg-tertiary hover:text-secondary transition-all ease-in-out duration-300"
-              >
-                Play
-              </button>
-            </li>
-          </ul>
-        </div>
+  <div>
+    <!--  Header Artist -->
+    <div class="relative h-fit">
+      <!-- Header Image -->
+      <div class="relative h-fit min-h-[20rem] lg:max-h-[30rem] lg:min-h-[30rem]">
+        <div
+          class="absolute inset-0 min-h-[20rem] w-full bg-primary transition-all duration-700 ease-in-out lg:max-h-[30rem] lg:min-h-[30rem]"
+          :class="imageLoaded ? 'opacity-0' : 'opacity-100'"
+        />
+        <NuxtImg
+          v-if="release.images"
+          format="webp"
+          preload
+          :src="release.images[release.images.length - 1]"
+          :alt="release.name"
+          @load="imageLoaded = true"
+          class="min-h-[20rem] w-full object-cover lg:max-h-[30rem] lg:min-h-[30rem]"
+        />
       </div>
     </div>
   </div>
-</template> -->
-<template></template>
+</template>

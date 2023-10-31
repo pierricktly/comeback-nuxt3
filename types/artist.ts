@@ -3,6 +3,7 @@ import { type Release } from './release'
 export interface Artist {
   id: string
   name: string
+  idYoutubeMusic: string
   description: string
   type: string
   images: string[]
@@ -13,5 +14,3 @@ export interface Artist {
   groups: Artist[]
   releases: Release[]
 }
-
-
