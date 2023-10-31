@@ -1,15 +1,15 @@
-import { useUserStore } from '@/stores/user';
+// import { useUserStore } from '@/stores/user';
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
-  const { firebaseUserStore } = useUserStore()
+  // const { firebaseUserStore } = useUserStore()
 
-  // redirect the user to the login page
-  if (!firebaseUserStore) {
-    return navigateTo({
-      path: '/authentification',
-      query: {
-        redirect: to.fullPath,
-      },
-    })
-  }
+  // // redirect the user to the login page
+  // if (!firebaseUserStore) {
+  //   return navigateTo({
+  //     path: '/authentification',
+  //     query: {
+  //       redirect: to.fullPath,
+  //     },
+  //   })
+  // }
 })

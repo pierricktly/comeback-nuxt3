@@ -31,7 +31,6 @@ const { data: dataTodayComeback } = await useAsyncQuery(
     filters: {
       date: {
         eq: new Date().toISOString().split('T')[0],
-        // eq: '2023-10-30',
       },
     },
   },
@@ -42,7 +41,6 @@ const getListComeback = async () => {
     // @ts-ignore
     dataComebacks.value.comebacks.data.map((comeback: any) => {
       formatComebackObject(comeback).then((cb) => {
-        // console.log('getListComeback -> cb', cb)
         comebackList.value.push(cb)
       })
     })

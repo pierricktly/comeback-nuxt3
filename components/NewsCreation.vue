@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import VueMultiselect from 'vue-multiselect'
 import { Timestamp } from 'firebase/firestore'
 import VueDatePicker from '@vuepic/vue-datepicker'
@@ -137,4 +137,8 @@ const createNews = () => {
       <p v-else>Send News</p>
     </button>
   </div>
+</template> -->
+
+<template>
+  <div>Hello World</div>
 </template>
