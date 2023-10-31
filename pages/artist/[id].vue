@@ -1,79 +1,79 @@
 <script setup lang="ts">
-// import { GRAPHQL_QUERY_GET_ARTIST_BY_ID } from '@/constants/graphql'
+import { GRAPHQL_QUERY_GET_ARTIST_BY_ID } from '@/constants/graphql'
 import { type Artist } from '@/types/artist'
-// import { type Release } from '@/types/release'
+import { type Release } from '@/types/release'
 
-// const title = ref('Artist Page')
-// const description = ref('Artist')
-// const route = useRoute()
+const title = ref('Artist Page')
+const description = ref('Artist')
+const route = useRoute()
 
 const artist = ref<Artist>({} as Artist)
-// const imageLoaded = ref(false)
+const imageLoaded = ref(false)
 
-// const { data } = await useAsyncQuery(GRAPHQL_QUERY_GET_ARTIST_BY_ID, {
-//   // artistId: '34',
-//   artistId: route.params.id,
-// }).catch((error) => {
-//   console.log(error)
-// })
+const { data } = await useAsyncQuery(GRAPHQL_QUERY_GET_ARTIST_BY_ID, {
+  // artistId: '34',
+  artistId: route.params.id,
+}).catch((error) => {
+  console.log(error)
+})
 
-// const getArtistData = async () => {
-//   if (data.value) {
-//     artist.value.id = data.value.artist.data.id
-//     artist.value.name = data.value.artist.data.attributes.name
-//     artist.value.description = data.value.artist.data.attributes.description
-//     artist.value.type = data.value.artist.data.attributes.type
-//     artist.value.images = data.value.artist.data.attributes.images
-//     artist.value.styles = data.value.artist.data.attributes.styles
-//     artist.value.socials = data.value.artist.data.attributes.socials
-//     artist.value.platforms = data.value.artist.data.attributes.platforms
-//     //for each member use formatArtistObject to have a list in artist.value.members
-//     artist.value.members = await Promise.all(
-//       data.value.artist.data.attributes.members.data.map(async (member: any) => {
-//         return await formatArtistObject(member)
-//       }),
-//     )
-//     //for each group use formatArtistObject to have a list in artist.value.groups
-//     artist.value.groups = await Promise.all(
-//       data.value.artist.data.attributes.groups.data.map(async (group: any) => {
-//         return await formatArtistObject(group)
-//       }),
-//     )
-//     //for each release use formatReleaseObject to have a list in artist.value.releases
-//     artist.value.releases = await Promise.all(
-//       data.value.artist.data.attributes.releases.data.map(async (release: any) => {
-//         return await formatReleaseObject(release)
-//       }),
-//     )
-//   }
-// }
+const getArtistData = async () => {
+  if (data.value) {
+    artist.value.id = data.value.artist.data.id
+    artist.value.name = data.value.artist.data.attributes.name
+    artist.value.description = data.value.artist.data.attributes.description
+    artist.value.type = data.value.artist.data.attributes.type
+    artist.value.images = data.value.artist.data.attributes.images
+    artist.value.styles = data.value.artist.data.attributes.styles
+    artist.value.socials = data.value.artist.data.attributes.socials
+    artist.value.platforms = data.value.artist.data.attributes.platforms
+    //for each member use formatArtistObject to have a list in artist.value.members
+    artist.value.members = await Promise.all(
+      data.value.artist.data.attributes.members.data.map(async (member: any) => {
+        return await formatArtistObject(member)
+      }),
+    )
+    //for each group use formatArtistObject to have a list in artist.value.groups
+    artist.value.groups = await Promise.all(
+      data.value.artist.data.attributes.groups.data.map(async (group: any) => {
+        return await formatArtistObject(group)
+      }),
+    )
+    //for each release use formatReleaseObject to have a list in artist.value.releases
+    artist.value.releases = await Promise.all(
+      data.value.artist.data.attributes.releases.data.map(async (release: any) => {
+        return await formatReleaseObject(release)
+      }),
+    )
+  }
+}
 
-// const formatArtistObject = async (artist: any) => {
-//   let a = {} as Artist
+const formatArtistObject = async (artist: any) => {
+  let a = {} as Artist
 
-//   a.id = artist.id
-//   a.name = artist.attributes.name
-//   a.images = artist.attributes.images
-//   a.type = artist.attributes.type
+  a.id = artist.id
+  a.name = artist.attributes.name
+  a.images = artist.attributes.images
+  a.type = artist.attributes.type
 
-//   return a
-// }
+  return a
+}
 
-// const formatReleaseObject = async (release: any) => {
-//   let r = {} as Release
+const formatReleaseObject = async (release: any) => {
+  let r = {} as Release
 
-//   r.id = release.id
-//   r.name = release.attributes.name
-//   r.type = release.attributes.type
-//   r.date = release.attributes.dateRelease
-//   r.images = release.attributes.images
+  r.id = release.id
+  r.name = release.attributes.name
+  r.type = release.attributes.type
+  r.date = release.attributes.dateRelease
+  r.images = release.attributes.images
 
-//   return r
-// }
+  return r
+}
 
-// onMounted(async () => {
-//   await getArtistData()
-// })
+onMounted(async () => {
+  await getArtistData()
+})
 
 const memberList = computed(() => {
   // return only member who type is SOLO
@@ -85,15 +85,15 @@ const subunitList = computed(() => {
   return artist.value.members?.filter((member) => member.type == 'GROUP')
 })
 
-// useHead({
-//   title,
-//   meta: [
-//     {
-//       name: 'description',
-//       content: description,
-//     },
-//   ],
-// })
+useHead({
+  title,
+  meta: [
+    {
+      name: 'description',
+      content: description,
+    },
+  ],
+})
 </script>
 
 <template>
