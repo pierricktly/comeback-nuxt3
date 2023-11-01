@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { GRAPHQL_QUERY_GET_ALL_ARTISTS } from '@/constants/graphql'
-import type { Artist } from './types/artist'
 
 // get token from runtime config
 const { STRAPI_KEY } = useRuntimeConfig()

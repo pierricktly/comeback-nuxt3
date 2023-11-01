@@ -32,12 +32,12 @@ if (data.value) {
       filters: {
         artists: {
           id: {
-            eq: '51',
+            eq: release.value.artists[0].id,
           },
         },
         not: {
           id: {
-            eq: '688',
+            eq: release.value.id,
           },
         },
       },

@@ -36,8 +36,6 @@ const { data: dataTodayComeback } = await useAsyncQuery(
   },
 )
 
-console.log(dataRandomMusics)
-
 const getListComeback = async () => {
   if (dataComebacks.value) {
     // @ts-ignore
