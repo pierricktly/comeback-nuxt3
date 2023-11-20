@@ -6,6 +6,6 @@ export interface Comeback {
   message: string
   verified: boolean
   date: Date
-  artist: Artist
+  artist: Partial<Artist>
   user: User
 }

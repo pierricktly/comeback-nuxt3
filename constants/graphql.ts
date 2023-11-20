@@ -1,4 +1,4 @@
-import gql from 'graphql-tag'
+import { gql } from '@apollo/client/core'
 
 export const GRAPHQL_QUERY_LATEST_ARTIST_CREATE = gql`
   query Query {

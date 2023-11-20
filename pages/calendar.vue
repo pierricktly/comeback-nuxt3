@@ -84,6 +84,7 @@ useHead({
 </script> -->
 
 <template>
+  <p>Hello World</p>
   <!-- <div
     class="container mx-auto min-h-screen space-y-5 p-5"
   >

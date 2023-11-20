@@ -8,15 +8,17 @@ export default defineNuxtConfig({
     },
   },
 
-  ssr: false,
+  plugins: ['~/plugins/apollo-client.js'],
 
   runtimeConfig: {
+    public: {
+      STRAPI_URL: process.env.STRAPI_URL,
+    },
     STRAPI_URL: process.env.STRAPI_URL,
     STRAPI_KEY: process.env.STRAPI_KEY,
   },
 
   modules: [
-    '@nuxtjs/apollo',
     '@nuxtjs/tailwindcss',
     '@nuxt/image',
     'nuxt-swiper',
@@ -26,20 +28,6 @@ export default defineNuxtConfig({
 
   build: {
     transpile: ['vue-toastification', '@vuepic/vue-datepicker'],
-  },
-
-  apollo: {
-    autoImports: true,
-    authType: 'Bearer',
-    authHeader: 'Authorization',
-    tokenStorage: 'cookie',
-    proxyCookies: true,
-    clients: {
-      default: {
-        tokenName: 'STRAPI_KEY',
-        httpEndpoint: process.env.STRAPI_URL + '/graphql',
-      },
-    },
   },
 
   tailwindcss: {

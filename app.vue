@@ -1,6 +1,4 @@
-<script setup lang="ts">
-import { GRAPHQL_QUERY_GET_ALL_ARTISTS } from '@/constants/graphql'
-
+<script setup>
 // get token from runtime config
 const { STRAPI_KEY } = useRuntimeConfig()
 
@@ -9,13 +7,6 @@ const cookie = useCookie('STRAPI_KEY')
 
 // set cookie value if not set
 cookie.value = cookie.value || STRAPI_KEY
-
-const artistList = useArtistList()
-const { formatArtistData } = useGeneralFunction()
-const { data, error, refresh } = await useAsyncQuery(GRAPHQL_QUERY_GET_ALL_ARTISTS)
-await data?.value?.artists?.data.map(async (artist) => {
-  artistList.value.push(await formatArtistData(artist))
-})
 </script>
 
 <template>
