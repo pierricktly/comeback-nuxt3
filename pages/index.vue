@@ -7,83 +7,21 @@ import type { Music } from '@/types/music'
 
 const { $apollo: apollo } = useNuxtApp()
 
+console.log('apollo', apollo)
+
 const newsToday = ref<Partial<Comeback>[]>([])
 const comebackList = ref<Partial<Comeback>[]>([])
 
-// const {
-//   data: dataComebacks,
-//   pending: pendingComebacks,
-//   error: errorComebacks,
-// } = useAsyncData('dataComebacks', async () => {
-//   console.log('Fetching comebacks - Start')
-//   if (!apollo) throw new Error('Apollo client is not initialized')
-
-//   try {
-//     const response = await apollo.query({
-//       query: gQuery.GRAPHQL_QUERY_GET_COMEBACK_AFTER_TODAY,
-//     })
-
-//     await getListComeback(response.data.comebacks.data)
-//     console.log('Fetching comebacks - End', response.data.comebacks.data)
-//     return response.data.comebacks.data
-//   } catch (e: any) {
-//     if (e.networkError) {
-//       console.error('Network error:', e.networkError)
-//     } else if (e.graphQLErrors) {
-//       e.graphQLErrors.forEach((err: any) => console.error('GraphQL error:', err))
-//     } else {
-//       console.error('Error fetching posts:', e)
-//     }
-//   }
-// })
-
-// const {
-//   data: dataTodayComeback,
-//   pending: pendingTodayComeback,
-//   error: errorTodayComeback,
-// } = useAsyncData('dataTodayComeback', async () => {
-//   console.log('Fetching today comebacks - Start')
-//   if (!apollo) throw new Error('Apollo client is not initialized')
-
-//   try {
-//     const response = await apollo.query({
-//       query: gQuery.GRAPHQL_QUERY_GET_TODAY_COMEBACK,
-//       variables: {
-//         filters: {
-//           date: {
-//             eq: new Date().toISOString().split('T')[0],
-//           },
-//         },
-//       },
-//     })
-
-//     await getTodayComebacks(response.data.comebacks.data)
-//     console.log('Fetching today comebacks - End', response.data.comebacks.data)
-//     return response.data.comebacks.data
-//   } catch (e: any) {
-//     if (e.networkError) {
-//       console.error('Network error:', e.networkError)
-//     } else if (e.graphQLErrors) {
-//       e.graphQLErrors.forEach((err: any) => console.error('GraphQL error:', err))
-//     } else {
-//       console.error('Error fetching posts:', e)
-//     }
-//   }
-// })
-
 const getListComeback = async (dtc: any) => {
-  console.log('Processed comebackList', comebackList.value)
   // @ts-ignore
   dtc.map(async (comeback: any) => {
     await formatComebackObject(comeback).then((cb) => {
-      console.log('cb', cb)
       comebackList.value.push(cb)
     })
   })
 }
 
 const getTodayComebacks = async (dtc: any) => {
-  console.log('Processed newsToday', newsToday.value)
   // @ts-ignore
   dtc.map(async (comeback: any) => {
     await formatComebackObject(comeback).then((cb) => {
@@ -119,7 +57,6 @@ onMounted(async () => {
     })
 
     await getListComeback(response.data.comebacks.data)
-    console.log('Fetching comebacks - End', response.data.comebacks.data)
     return response.data.comebacks.data
   } catch (e: any) {
     if (e.networkError) {
@@ -132,6 +69,7 @@ onMounted(async () => {
   }
 
   try {
+    // @ts-ignore
     const response = await apollo.query({
       query: gQuery.GRAPHQL_QUERY_GET_TODAY_COMEBACK,
       variables: {
@@ -144,7 +82,6 @@ onMounted(async () => {
     })
 
     await getTodayComebacks(response.data.comebacks.data)
-    console.log('Fetching today comebacks - End', response.data.comebacks.data)
     return response.data.comebacks.data
   } catch (e: any) {
     if (e.networkError) {
