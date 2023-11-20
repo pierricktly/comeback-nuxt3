@@ -14,7 +14,6 @@ const {
   data: dataComebacks,
   pending: pendingComebacks,
   error: errorComebacks,
-  refresh: refreshComebacks,
 } = useAsyncData('dataComebacks', async () => {
   console.log('Fetching comebacks - Start')
   if (!apollo) throw new Error('Apollo client is not initialized')
@@ -36,7 +35,6 @@ const {
   data: dataTodayComeback,
   pending: pendingTodayComeback,
   error: errorTodayComeback,
-  refresh: refreshTodayComeback,
 } = useAsyncData('dataTodayComeback', async () => {
   console.log('Fetching today comebacks - Start')
   if (!apollo) throw new Error('Apollo client is not initialized')
@@ -174,22 +172,6 @@ useHead({
 
 <template>
   <div class="container mx-auto lg:px-10">
-    <div v-if="dataTodayComeback">
-      <p>dataTodayComeback</p>
-      <pre>{{ dataTodayComeback }}</pre>
-    </div>
-    <div v-else>
-      <p>No data available for today's comebacks</p>
-    </div>
-
-    <div v-if="dataComebacks">
-      <p>dataComebacks</p>
-      <pre>{{ dataComebacks }}</pre>
-    </div>
-    <div v-else>
-      <p>No data available for comebacks</p>
-    </div>
-
     <div v-if="newsToday">
       <p>newsToday</p>
       <pre>{{ newsToday }}</pre>
