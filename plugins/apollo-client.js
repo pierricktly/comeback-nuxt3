@@ -13,6 +13,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const apolloClient = new ApolloClient({
     link: httpLink,
+    key: config.public.STRAPI_KEY,
     cache,
   })
 

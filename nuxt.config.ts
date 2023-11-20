@@ -13,6 +13,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       STRAPI_URL: process.env.STRAPI_URL,
+      STRAPI_KEY: process.env.STRAPI_KEY,
     },
     STRAPI_URL: process.env.STRAPI_URL,
     STRAPI_KEY: process.env.STRAPI_KEY,
