@@ -130,6 +130,31 @@ onMounted(async () => {
       console.error('Error fetching posts:', e)
     }
   }
+
+  try {
+    const response = await apollo.query({
+      query: gQuery.GRAPHQL_QUERY_GET_TODAY_COMEBACK,
+      variables: {
+        filters: {
+          date: {
+            eq: new Date().toISOString().split('T')[0],
+          },
+        },
+      },
+    })
+
+    await getTodayComebacks(response.data.comebacks.data)
+    console.log('Fetching today comebacks - End', response.data.comebacks.data)
+    return response.data.comebacks.data
+  } catch (e: any) {
+    if (e.networkError) {
+      console.error('Network error:', e.networkError)
+    } else if (e.graphQLErrors) {
+      e.graphQLErrors.forEach((err: any) => console.error('GraphQL error:', err))
+    } else {
+      console.error('Error fetching posts:', e)
+    }
+  }
 })
 
 useHead({
