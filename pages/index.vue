@@ -10,54 +10,66 @@ const { $apollo: apollo } = useNuxtApp()
 const newsToday = ref<Partial<Comeback>[]>([])
 const comebackList = ref<Partial<Comeback>[]>([])
 
-const {
-  data: dataComebacks,
-  pending: pendingComebacks,
-  error: errorComebacks,
-} = useAsyncData('dataComebacks', async () => {
-  console.log('Fetching comebacks - Start')
-  if (!apollo) throw new Error('Apollo client is not initialized')
+// const {
+//   data: dataComebacks,
+//   pending: pendingComebacks,
+//   error: errorComebacks,
+// } = useAsyncData('dataComebacks', async () => {
+//   console.log('Fetching comebacks - Start')
+//   if (!apollo) throw new Error('Apollo client is not initialized')
 
-  try {
-    const response = await apollo.query({
-      query: gQuery.GRAPHQL_QUERY_GET_COMEBACK_AFTER_TODAY,
-    })
+//   try {
+//     const response = await apollo.query({
+//       query: gQuery.GRAPHQL_QUERY_GET_COMEBACK_AFTER_TODAY,
+//     })
 
-    await getListComeback(response.data.comebacks.data)
-    console.log('Fetching comebacks - End', response.data.comebacks.data)
-    return response.data.comebacks.data
-  } catch (e) {
-    console.error('Error fetching posts:', e)
-  }
-})
+//     await getListComeback(response.data.comebacks.data)
+//     console.log('Fetching comebacks - End', response.data.comebacks.data)
+//     return response.data.comebacks.data
+//   } catch (e: any) {
+//     if (e.networkError) {
+//       console.error('Network error:', e.networkError)
+//     } else if (e.graphQLErrors) {
+//       e.graphQLErrors.forEach((err: any) => console.error('GraphQL error:', err))
+//     } else {
+//       console.error('Error fetching posts:', e)
+//     }
+//   }
+// })
 
-const {
-  data: dataTodayComeback,
-  pending: pendingTodayComeback,
-  error: errorTodayComeback,
-} = useAsyncData('dataTodayComeback', async () => {
-  console.log('Fetching today comebacks - Start')
-  if (!apollo) throw new Error('Apollo client is not initialized')
+// const {
+//   data: dataTodayComeback,
+//   pending: pendingTodayComeback,
+//   error: errorTodayComeback,
+// } = useAsyncData('dataTodayComeback', async () => {
+//   console.log('Fetching today comebacks - Start')
+//   if (!apollo) throw new Error('Apollo client is not initialized')
 
-  try {
-    const response = await apollo.query({
-      query: gQuery.GRAPHQL_QUERY_GET_TODAY_COMEBACK,
-      variables: {
-        filters: {
-          date: {
-            eq: new Date().toISOString().split('T')[0],
-          },
-        },
-      },
-    })
+//   try {
+//     const response = await apollo.query({
+//       query: gQuery.GRAPHQL_QUERY_GET_TODAY_COMEBACK,
+//       variables: {
+//         filters: {
+//           date: {
+//             eq: new Date().toISOString().split('T')[0],
+//           },
+//         },
+//       },
+//     })
 
-    await getTodayComebacks(response.data.comebacks.data)
-    console.log('Fetching today comebacks - End', response.data.comebacks.data)
-    return response.data.comebacks.data
-  } catch (e) {
-    console.error('Error fetching posts:', e)
-  }
-})
+//     await getTodayComebacks(response.data.comebacks.data)
+//     console.log('Fetching today comebacks - End', response.data.comebacks.data)
+//     return response.data.comebacks.data
+//   } catch (e: any) {
+//     if (e.networkError) {
+//       console.error('Network error:', e.networkError)
+//     } else if (e.graphQLErrors) {
+//       e.graphQLErrors.forEach((err: any) => console.error('GraphQL error:', err))
+//     } else {
+//       console.error('Error fetching posts:', e)
+//     }
+//   }
+// })
 
 const getListComeback = async (dtc: any) => {
   console.log('Processed comebackList', comebackList.value)
@@ -97,13 +109,26 @@ async function formatComebackObject(comeback: any): Promise<Partial<Comeback>> {
   return cb
 }
 
-watchEffect(() => {
-  if (dataComebacks?.value && dataTodayComeback?.value) {
-    console.log('dataComebacks updated:', dataComebacks.value)
-    console.log('dataTodayComeback updated:', dataTodayComeback.value)
-  } else {
-    console.log('dataComebacks:', dataComebacks)
-    console.log('dataTodayComeback:', dataTodayComeback)
+onMounted(async () => {
+  if (!apollo) throw new Error('Apollo client is not initialized')
+
+  try {
+    // @ts-ignore
+    const response = await apollo.query({
+      query: gQuery.GRAPHQL_QUERY_GET_COMEBACK_AFTER_TODAY,
+    })
+
+    await getListComeback(response.data.comebacks.data)
+    console.log('Fetching comebacks - End', response.data.comebacks.data)
+    return response.data.comebacks.data
+  } catch (e: any) {
+    if (e.networkError) {
+      console.error('Network error:', e.networkError)
+    } else if (e.graphQLErrors) {
+      e.graphQLErrors.forEach((err: any) => console.error('GraphQL error:', err))
+    } else {
+      console.error('Error fetching posts:', e)
+    }
   }
 })
 
