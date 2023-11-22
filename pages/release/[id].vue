@@ -3,12 +3,13 @@ import {
   GRAPHQL_QUERY_GET_RELEASE_BY_ID,
   GRAPHQL_QUERY_GET_RELEASES_BY_ARTIST_ID,
 } from '@/constants/graphql'
-import { type release } from '@/types/release'
 import { type Release } from '@/types/release'
 
 const title = ref('Release Page')
 const description = ref('Release')
 const route = useRoute()
+
+const { $apollo: apollo } = useNuxtApp()
 
 const { formatReleaseData } = useGeneralFunction()
 
@@ -16,43 +17,53 @@ const release = ref<Release>({} as Release)
 const artistRelease = ref<Release[]>([] as Release[])
 const imageLoaded = ref(false)
 
-const { data, error, refresh } = await useAsyncQuery(GRAPHQL_QUERY_GET_RELEASE_BY_ID, {
-  releaseId: route.params.id,
-}).catch((error: any) => {
-  console.log(error)
-})
+onMounted(async () => {
+  if (!apollo) throw new Error('Apollo client is not initialized')
 
-if (data.value) {
-  const releaseData = data.value.release.data
-  release.value = await formatReleaseData(releaseData)
-
-  const { data: artRelease } = await useAsyncQuery(
-    GRAPHQL_QUERY_GET_RELEASES_BY_ARTIST_ID,
-    {
-      filters: {
-        artists: {
-          id: {
-            eq: release.value.artists[0].id,
+  try {
+    // @ts-ignore
+    const response = await apollo.query({
+      query: GRAPHQL_QUERY_GET_RELEASE_BY_ID,
+      variables: {
+        releaseId: route.params.id,
+      },
+    })
+    const releaseData = response.data.release.data
+    release.value = await formatReleaseData(releaseData)
+    const responseReleaseByArtist = await apollo.query({
+      query: GRAPHQL_QUERY_GET_RELEASES_BY_ARTIST_ID,
+      variables: {
+        filters: {
+          artists: {
+            id: {
+              eq: release.value.artists[0].id,
+            },
           },
-        },
-        not: {
-          id: {
-            eq: release.value.id,
+          not: {
+            id: {
+              eq: release.value.id,
+            },
           },
         },
       },
-    },
-  ).catch((error: any) => {
-    console.log(error)
-  })
-  console.log('artRelease', artRelease.value.releases.data)
-  artRelease.value.releases.data.map(async (release: any) => {
-    artistRelease.value.push(await formatReleaseData(release))
-  })
-  console.log('artistRelease', artistRelease.value)
-}
-
-onMounted(async () => {
+    })
+    console.log('responseReleaseByArtist', responseReleaseByArtist.data.releases.data)
+    const releaseByArtistData = responseReleaseByArtist.data.releases.data
+    releaseByArtistData.map(async (release: any) => {
+      console.log('release', release)
+      const tmp = await formatReleaseData(release)
+      console.log('tmp', tmp)
+      artistRelease.value.push(tmp)
+    })
+  } catch (e: any) {
+    if (e.networkError) {
+      console.error('Network error:', e.networkError)
+    } else if (e.graphQLErrors) {
+      e.graphQLErrors.forEach((err: any) => console.error('GraphQL error:', err))
+    } else {
+      console.error('Error fetching posts:', e)
+    }
+  }
   title.value = release.value.name + ' by ' + release.value.artists[0].name
   description.value = release.value.name + ' by ' + release.value.artists[0].name
 })
@@ -170,7 +181,7 @@ useHead({
         <Skeleton class="h-3 w-2/4 rounded-full" />
       </section>
       <!-- Platforms -->
-      <section v-if="release.platforms.length" class="space-y-2">
+      <section v-if="release.platforms?.length" class="space-y-2">
         <p class="font-black">Streaming Platforms</p>
         <div class="flex gap-2">
           <ComebackExternalLink
@@ -182,7 +193,7 @@ useHead({
         </div>
       </section>
       <!-- Musics -->
-      <section v-if="release.music.length" class="space-y-2">
+      <section v-if="release.music?.length" class="space-y-2">
         <p class="font-black">Tracks</p>
         <div class="space-y-2">
           <MusicDisplay
@@ -202,8 +213,8 @@ useHead({
         </div>
       </section>
       <!-- Release -->
-      <section v-if="artistRelease.length" class="space-y-2">
-        <p class="font-black">Other releases of {{ release.artists[0].name }}</p>
+      <section v-if="artistRelease?.length" class="space-y-2">
+        <p class="font-black">Other releases by {{ release.artists[0].name }}</p>
         <section
           class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
         >

@@ -7,6 +7,6 @@ export interface Music {
   name: string
   duration: Number
   images: string[]
-  artists: Artist[]
-  releases: Release[]
+  artists: Partial<Artist>[]
+  releases: Partial<Release>[]
 }

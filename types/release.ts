@@ -11,6 +11,6 @@ export interface Release {
   platforms: Object
   dateRelease: string
   images: string[]
-  artists: Artist[]
-  music: Music[]
+  artists: Partial<Artist>[]
+  music: Partial<Music>[]
 }

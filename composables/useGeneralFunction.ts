@@ -29,7 +29,9 @@ export function useGeneralFunction() {
       groups: attributes.groups
         ? await formatArray(attributes.groups.data, formatArtistData)
         : [],
-      releases: []
+      releases: attributes.releases
+        ? await formatArray(attributes.releases.data, formatReleaseData)
+        : [],
     }
 
     return artistTmp
@@ -83,7 +85,6 @@ export function useGeneralFunction() {
 
     return musicTmp
   }
-    
 
   const formatArray = async (array: any[], formatter: Function) => {
     return await Promise.all(array.map(async (item) => await formatter(item)))
