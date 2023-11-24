@@ -136,7 +136,6 @@ async function formatReleaseObject(release: any): Promise<Partial<Release>> {
 
 onMounted(async () => {
   if (!apollo) throw new Error('Apollo client is not initialized')
-
   try {
     // @ts-ignore
     const response = await apollo.query({
@@ -250,9 +249,7 @@ onMounted(async () => {
     const responseRecentRelease = await apollo.query({
       query: gQuery.GRAPHQL_QUERY_LATEST_RELEASE,
     })
-    console.log('responseRecentRelease', responseRecentRelease.data.releases.data)
     await getRecentRelease(responseRecentRelease.data.releases.data)
-    console.log('lastRelease', lastRelease.value)
   } catch (e: any) {
     if (e.networkError) {
       console.error('Network error:', e.networkError)
@@ -282,8 +279,7 @@ useHead({
     {
       hid: 'description',
       name: 'description',
-      content:
-        "Don't miss any Comeback. Track every next release by your favorite artists.",
+      content: "Don't miss any Comeback. Track every next release by your favorite artists.",
     },
     {
       hid: 'og:site_name',
@@ -303,8 +299,7 @@ useHead({
     {
       hid: 'og:description',
       property: 'og:description',
-      content:
-        "Don't miss any Comeback. Track every next release by your favorite artists.",
+      content: "Don't miss any Comeback. Track every next release by your favorite artists.",
     },
     {
       hid: 'og:url',
@@ -328,117 +323,91 @@ useHead({
 </script>
 
 <template>
-  <div class="container mx-auto lg:px-10">
+  <div>
     <!-- Slider Block -->
     <ComebackSlider v-if="newsToday" :newsToday="newsToday" class="pb-8 lg:pb-12" />
-    <!-- Random Songs & Comeback Block -->
-    <div class="grid grid-cols-1 gap-5 px-5 pb-8 md:px-0 lg:grid-cols-2 lg:pb-12">
-      <!-- Random Songs Block -->
-      <div class="w-full rounded bg-quaternary p-3">
-        <p class="pb-3 text-center text-xl font-bold">Discover Music</p>
-        <div v-if="randomSongs.length > 4" class="space-y-2">
-          <MusicDisplay
-            v-for="song in randomSongs"
-            :key="song.id"
-            :albumId="song.releases[0].id"
-            :albumName="song.releases[0].name"
-            :artistId="song.artists[0].id"
-            :artistName="song.artists[0].name"
-            :artistImage="song.artists[0].images[0]"
-            :musicId="song.videoId"
-            :musicName="song.name"
-            :musicImage="song.images[2]"
-            :duration="song.duration?.toString()"
-            class="w-full bg-quinary"
-          />
-        </div>
-        <div v-else class="space-y-2">
-          <Skeleton v-for="i in 5" class="h-10 w-full rounded" />
-        </div>
-      </div>
+    <div class="container mx-auto">
       <!-- Comeback Block -->
-      <div class="w-full rounded bg-quaternary p-3">
-        <p class="pb-3 text-center text-xl font-bold">Comeback</p>
-        <div v-if="comebackList.length" class="space-y-2">
-          <CardComeback
-            v-for="comeback in comebackList"
-            :key="comeback.id"
-            :date="comeback.date"
-            :artistName="comeback.artist.name"
-            :message="comeback.message"
-            :artistId="comeback.artist.id"
-          />
-        </div>
-        <div v-else class="space-y-2">
-          <Skeleton v-for="i in 10" class="h-5 w-full rounded" />
+      <div class="space-y-5 pb-8 lg:pb-12">
+        <p class="pl-5 text-2xl font-bold lg:pl-0">Comeback Reported</p>
+        <ComebackReported :comebackList="comebackList" />
+      </div>
+      <!-- Discover Music -->
+      <div class="space-y-5 pb-8 lg:pb-12 xl:space-y-8 2xl:space-y-14">
+        <p class="text-center text-xl font-bold lg:text-4xl">Discover Music</p>
+        <div class="grid grid-cols-2 gap-5 lg:grid-cols-4">
+          <DiscoverMusic />
+          <DiscoverMusic />
+          <DiscoverMusic />
+          <DiscoverMusic />
         </div>
       </div>
-    </div>
-    <!-- Artist Added Block -->
-    <div class="space-y-5 pb-8 lg:pb-12">
-      <p class="pl-5 text-2xl font-bold lg:pl-0">Artist Added</p>
-      <section
-        v-if="lastArtistAdded.length"
-        class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
-      >
-        <CardObject
-          v-for="artist in lastArtistAdded"
-          :key="artist.id"
-          :mainTitle="artist.name"
-          :subTitle="artist.type == 'SOLO' ? 'Soloist' : 'Group'"
-          :image="artist.images[0]"
-          :object-link="`/artist/${artist.id}`"
-          isArtist
-        />
-      </section>
-      <section
-        v-else
-        class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
-      >
-        <div
-          v-for="n in 8"
-          class="min-w-[10rem] max-w-[10rem] space-y-3 rounded bg-quaternary p-4 2xl:min-w-[11rem] 2xl:max-w-[11rem]"
+      <!-- Artist Added Block -->
+      <div class="space-y-5 pb-8 lg:pb-12">
+        <p class="pl-5 text-2xl font-bold lg:pl-0">Artist Added</p>
+        <section
+          v-if="lastArtistAdded.length"
+          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
         >
-          <Skeleton :key="n" class="aspect-square w-full rounded-full" />
-          <div class="space-y-3">
-            <Skeleton class="h-4 w-full rounded-full" />
-            <Skeleton class="h-4 w-3/4 rounded-full" />
-          </div>
-        </div>
-      </section>
-    </div>
-    <!-- Recent Releases Block -->
-    <div class="space-y-5 pb-8 lg:pb-12">
-      <p class="pl-5 text-2xl font-bold lg:pl-0">Recent Releases</p>
-      <section
-        v-if="lastArtistAdded.length && lastRelease.length"
-        class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
-      >
-        <CardObject
-          v-for="release in lastRelease"
-          :key="release.id"
-          :mainTitle="release.name"
-          :subTitle="release.artist.name"
-          :artistId="release.artist.id"
-          :image="release.images[2]"
-          :object-link="`/release/${release.id}`"
-        />
-      </section>
-      <section
-        v-else
-        class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
-      >
-        <div
-          v-for="n in 8"
-          class="min-w-[10rem] max-w-[10rem] space-y-3 rounded bg-quaternary p-4 2xl:min-w-[11rem] 2xl:max-w-[11rem]"
+          <CardObject
+            v-for="artist in lastArtistAdded"
+            :key="artist.id"
+            :mainTitle="artist.name"
+            :subTitle="artist.type == 'SOLO' ? 'Soloist' : 'Group'"
+            :image="artist.images[0]"
+            :object-link="`/artist/${artist.id}`"
+            isArtist
+          />
+        </section>
+        <section
+          v-else
+          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
         >
-          <Skeleton :key="n" class="aspect-square w-full rounded" />
-          <div class="space-y-3">
-            <Skeleton class="h-4 w-full rounded-full" />
-            <Skeleton class="h-4 w-3/4 rounded-full" />
+          <div
+            v-for="n in 8"
+            class="min-w-[10rem] max-w-[10rem] space-y-3 rounded bg-quaternary p-4 2xl:min-w-[11rem] 2xl:max-w-[11rem]"
+          >
+            <Skeleton :key="n" class="aspect-square w-full rounded-full" />
+            <div class="space-y-3">
+              <Skeleton class="h-4 w-full rounded-full" />
+              <Skeleton class="h-4 w-3/4 rounded-full" />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
+      <!-- Recent Releases Block -->
+      <div class="space-y-5 pb-8 lg:pb-12">
+        <p class="pl-5 text-2xl font-bold lg:pl-0">Recent Releases</p>
+        <section
+          v-if="lastArtistAdded.length && lastRelease.length"
+          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
+        >
+          <CardObject
+            v-for="release in lastRelease"
+            :key="release.id"
+            :mainTitle="release.name"
+            :subTitle="release.artist.name"
+            :artistId="release.artist.id"
+            :image="release.images[2]"
+            :object-link="`/release/${release.id}`"
+          />
+        </section>
+        <section
+          v-else
+          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0 lg:justify-between lg:gap-2"
+        >
+          <div
+            v-for="n in 8"
+            class="min-w-[10rem] max-w-[10rem] space-y-3 rounded bg-quaternary p-4 2xl:min-w-[11rem] 2xl:max-w-[11rem]"
+          >
+            <Skeleton :key="n" class="aspect-square w-full rounded" />
+            <div class="space-y-3">
+              <Skeleton class="h-4 w-full rounded-full" />
+              <Skeleton class="h-4 w-3/4 rounded-full" />
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 </template>

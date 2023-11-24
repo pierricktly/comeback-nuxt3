@@ -14,9 +14,11 @@ export default defineNuxtConfig({
     public: {
       STRAPI_URL: process.env.STRAPI_URL,
       STRAPI_KEY: process.env.STRAPI_KEY,
+      YOUTUBE_API_KEY: process.env.YOUTUBE_API_KEY,
     },
     STRAPI_URL: process.env.STRAPI_URL,
     STRAPI_KEY: process.env.STRAPI_KEY,
+    YOUTUBE_API_KEY: process.env.YOUTUBE_API_KEY,
   },
 
   modules: [

@@ -21,6 +21,7 @@ const route = useRoute()
 
 // Get artist data from graphql
 const { data, error, refresh }: any = await useAsyncQuery(
+  
   GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT,
   {
     artistId: route.params.id,

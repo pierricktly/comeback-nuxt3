@@ -33,10 +33,10 @@ const isPlayingVideo = useIsPlayingVideo()
       :isAdmin="isAdminStore"
       :isLogin="isLoginStore"
     /> -->
-    <!-- <LazyYoutubePlayer
+    <LazyYoutubePlayer
       ref="YTPlayer"
       v-if="isPlayingVideo"
       class="animate__animated animate__fadeInUp fixed bottom-0"
-    /> -->
+    />
   </div>
 </template>

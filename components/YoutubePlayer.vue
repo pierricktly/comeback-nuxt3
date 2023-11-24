@@ -1,44 +1,37 @@
 <script setup>
 const idYoutubeVideo = useIdYoutubeVideo()
 const isPlayingVideo = useIsPlayingVideo()
+const musicNamePlaying = useMusicNamePlaying()
+const authorNamePlaying = useAuthorNamePlaying()
 
-let videoId = idYoutubeVideo.value
-
-const isPlaying = ref(isPlayingVideo.value)
+const isPlaying = ref(false)
 const currentTime = ref(0)
 const duration = ref(0)
-
+let intervalId = null
 const playerContainer = ref(null)
 const player = ref(null)
 const volumeOn = ref(true)
-const volume = ref(10)
+const volume = ref(20)
+const errorDetected = ref(false)
+const isVideoDisplay = ref(false)
 
-onMounted(() => {
-  if (document.readyState === 'complete') {
-    createYTPlayer()
-  } else {
-    window.addEventListener('load', createYTPlayer)
-  }
-  setVolume(volume.value)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('load', createYTPlayer)
-  if (player.value) {
-    player.value.destroy()
-  }
-})
-
-const changeVideoId = (id) => {
-  if (player.value) {
-    player.value.cueVideoById(id)
+const displayVideo = () => {
+  const iframe = document.getElementById('playerContainer')
+  if (iframe) {
+    if (isVideoDisplay.value) {
+      iframe.classList.remove('hidden')
+      isVideoDisplay.value = false
+    } else {
+      iframe.classList.add('hidden')
+      isVideoDisplay.value = true
+    }
   }
 }
 
+// Création du lecteur YouTube
 const createPlayer = () => {
-  // height and width 100% of frame
-  player.value = new window.YT.Player(playerContainer.value, {
-    videoId,
+  player.value = new window.YT.Player('playerContainer', {
+    videoId: idYoutubeVideo.value,
     height: '100%',
     width: '100%',
     playerVars: {
@@ -52,17 +45,42 @@ const createPlayer = () => {
       playsinline: 1,
       rel: 0,
       showinfo: 0,
-      host: 'https://www.youtube.com',
+      host: 'https://come-back.netlify.app' || 'https://localhost:3000',
     },
-    volume: volume.value,
     events: {
       onReady: onPlayerReady,
       onStateChange: onPlayerStateChange,
+      onError: onPlayerError,
     },
   })
 }
 
-const createYTPlayer = () => {
+const onPlayerReady = async (event) => {
+  duration.value = event.target.getDuration()
+  setVolume(volume.value)
+}
+
+const onPlayerStateChange = (event) => {
+  isPlaying.value = event.data === window.YT.PlayerState.PLAYING
+  if (isPlaying.value) {
+    errorDetected.value = false
+    duration.value = player.value.getDuration()
+  }
+}
+
+const onPlayerError = (event) => {
+  // console.log('event', event.data)
+  switch (event.data) {
+    case 100:
+    case 101:
+    case 150:
+      errorDetected.value = true
+      console.error('Video is restricted or unavailable.')
+      break
+  }
+}
+
+const initYTPlayer = () => {
   if (window.YT && window.YT.Player) {
     createPlayer()
   } else {
@@ -70,24 +88,47 @@ const createYTPlayer = () => {
     tag.src = 'https://www.youtube.com/iframe_api'
     const firstScriptTag = document.getElementsByTagName('script')[0]
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
-    window.onYouTubePlayerAPIReady = function () {
-      createPlayer()
+    window.onYouTubePlayerAPIReady = createPlayer
+  }
+}
+
+const updateCurrentTime = () => {
+  if (player.value && typeof player.value.getPlayerState === 'function') {
+    if (player.value.getPlayerState() === window.YT.PlayerState.PLAYING) {
+      currentTime.value = player.value.getCurrentTime()
     }
   }
 }
 
-const onPlayerReady = (event) => {
-  duration.value = event.target.getDuration()
-  event.target.playVideo()
-}
+watch(
+  idYoutubeVideo,
+  (newId) => {
+    if (player.value) {
+      player.value.loadVideoById(newId)
+      // console.log('isPlaying', isPlaying.value)
+      if (isPlaying.value) {
+        // console.log('player.value', player.value)
+        player.value.playVideo()
+      }
+    }
+  },
+  { immediate: true },
+)
 
-const onPlayerStateChange = (event) => {
-  if (event.data === 1) {
-    isPlaying.value = true
-  } else if (event.data === 2 || event.data === 0) {
-    isPlaying.value = false
+onMounted(() => {
+  initYTPlayer()
+  intervalId = setInterval(updateCurrentTime, 1000)
+})
+
+onBeforeUnmount(() => {
+  if (intervalId) {
+    clearInterval(intervalId)
   }
-}
+
+  if (player.value) {
+    player.value.destroy()
+  }
+})
 
 const togglePlayPause = () => {
   if (player.value) {
@@ -113,10 +154,10 @@ const seekToTime = () => {
   }
 }
 
-const setVolume = (volume) => {
+const setVolume = (newVolume) => {
   if (player.value) {
     player.value.setVolume(newVolume)
-    volume.value = newVolume // Met à jour la valeur réactive
+    volume.value = newVolume
   }
 }
 
@@ -140,34 +181,27 @@ const closeYTPlayer = () => {
   }
 }
 
-watch(
-  () => idYoutubeVideo.value,
-  (newValue) => {
-    changeVideoId(newValue)
-  },
-)
+const convertDuration = (duration) => {
+  const minutes = Math.floor(duration / 60)
+  let seconds = Math.round(duration % 60)
 
-setTimeout(() => {
-  setInterval(() => {
-    if (player.value && isPlaying.value) {
-      // @ts-ignore
-      currentTime.value = player.value.getCurrentTime() || 0
-    }
-  }, 1000)
-}, 5000)
+  seconds = seconds < 10 ? `0${seconds}` : seconds
+
+  return `${minutes}:${seconds}`
+}
 </script>
 
 <template>
   <div
-    v-if="isPlayingVideo"
     class="fixed bottom-0 z-50 flex w-full flex-col items-center justify-center space-y-3 sm:items-end sm:justify-end"
   >
     <div
+      id="playerContainer"
       ref="playerContainer"
-      class="hidden aspect-video w-1/4 min-w-[20rem] overflow-hidden rounded-lg px-2 lg:block"
+      class="hidden aspect-video w-1/4 min-w-[20rem] overflow-hidden rounded-lg px-2 lg:absolute lg:-top-72 lg:right-0 lg:z-50 lg:h-72"
     ></div>
     <div class="relative flex w-full items-center justify-between bg-secondary px-5 py-3">
-      <div class="flex items-center space-x-2">
+      <div class="flex w-full items-center space-x-2 sm:w-fit">
         <button class="hover:text-primary" @click="seek(-10)">
           <IconBackward10 class="h-7 w-7" />
         </button>
@@ -180,28 +214,37 @@ setTimeout(() => {
         <button class="hover:text-primary" @click="seek(10)">
           <IconForward10 class="h-7 w-7" />
         </button>
+        <div class="hidden items-center gap-1 pl-5 text-xs md:flex">
+          <p>{{ convertDuration(currentTime) }}</p>
+          <p>/</p>
+          <p>{{ convertDuration(duration) }}</p>
+        </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div v-if="!errorDetected" class="w-full sm:w-fit">
+        <p class="font-semibold">{{ authorNamePlaying }}</p>
+        <p class="text-xs">{{ musicNamePlaying }}</p>
+      </div>
+      <div v-else class="w-full sm:w-fit">
+        <p class="font-bold text-primary">Video is restricted or unavailable.</p>
+      </div>
+      <div class="hidden items-center gap-2 sm:flex">
+        <!-- <button @click="displayVideo" class="aspect-square rounded bg-red-500 p-1">
+          D
+        </button> -->
         <button @click="muteVolume">
           <IconVolumeOn v-if="volumeOn" class="h-7 w-7" />
           <IconVolumeOff v-else class="h-7 w-7" />
         </button>
-        <input
-          id="volume"
-          type="range"
-          min="0"
-          max="100"
-          v-model="volume"
-          @input="setVolume(volume)"
-        />
+        <input id="volume" type="range" min="0" max="100" v-model="volume" @input="setVolume(volume)" />
       </div>
       <input
+        id="progressTime"
         type="range"
         min="0"
         :max="duration"
         v-model="currentTime"
         @input="seekToTime"
-        class="absolute -top-1 left-0 h-1 w-full cursor-pointer overflow-hidden bg-primary"
+        class="absolute -top-1 left-0 h-1 w-full cursor-pointer overflow-hidden"
       />
       <button
         class="absolute -top-6 left-2 rounded-t-lg bg-primary px-3 py-0.5 text-xs font-semibold uppercase"

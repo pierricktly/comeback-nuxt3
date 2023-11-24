@@ -6,6 +6,9 @@ import { type Release } from '@/types/release'
 const title = ref('Artist Page')
 const description = ref('Artist')
 const route = useRoute()
+const { artistFetch, isAdmin, isLogin } = defineProps(['artistFetch', 'isAdmin', 'isLogin'])
+
+const isFetchingArtist = ref(false)
 
 const { $apollo: apollo } = useNuxtApp()
 
@@ -28,6 +31,7 @@ onMounted(async () => {
     const artistData = response.data.artist.data
     console.log('artistData', artistData)
     artist.value = await formatArtistData(artistData)
+    isFetchingArtist.value = true
   } catch (e: any) {
     if (e.networkError) {
       console.error('Network error:', e.networkError)
@@ -62,188 +66,128 @@ useHead({
 
 <template>
   <div>
-    <!--  Header Artist -->
-    <div class="relative h-fit">
-      <!-- Header Image -->
-      <div class="relative h-fit min-h-[20rem] lg:max-h-[30rem] lg:min-h-[30rem]">
-        <div
-          class="absolute inset-0 min-h-[20rem] w-full bg-primary transition-all duration-700 ease-in-out lg:max-h-[30rem] lg:min-h-[30rem]"
-          :class="imageLoaded ? 'opacity-0' : 'opacity-100'"
-        ></div>
-        <NuxtImg
-          v-if="artist.images"
-          format="webp"
-          preload
-          :src="artist.images[artist.images.length - 1]"
-          :alt="artist.name"
-          @load="imageLoaded = true"
-          class="min-h-[20rem] w-full object-cover lg:max-h-[30rem] lg:min-h-[30rem]"
-        />
-      </div>
-      <!-- Header Data-->
+    <section
+      class="background-top relative h-[30vh] overflow-hidden bg-cover bg-no-repeat lg:h-[40vh] xl:h-[50vh] 2xl:h-[70vh]"
+    >
+      <NuxtImg
+        v-if="artist.images"
+        :src="artist.images[artist.images.length - 1]"
+        :alt="artist.name + '_back'"
+        format="webp"
+        loading="lazy"
+        @load="imageLoaded = true"
+        class="absolute inset-0 h-full w-full object-cover"
+      />
       <div
-        class="flex flex-col justify-end space-y-3 p-5 transition-all duration-300 ease-in-out md:absolute md:inset-0 md:min-h-full md:bg-secondary/50"
+        class="absolute inset-0 flex items-end p-5 transition-all duration-500 ease-in-out lg:py-10"
+        :class="imageLoaded ? 'bg-secondary/60' : 'bg-quinary'"
       >
-        <div class="container mx-auto space-y-2.5">
-          <!-- Data Fetched -->
-          <div v-if="artist.name" class="space-y-2">
-            <h1 class="text-2xl font-black lg:text-4xl 2xl:text-7xl">
-              {{ artist.name }}
-            </h1>
-            <div class="flex flex-wrap gap-2 text-[0.5rem] lg:text-xs">
-              <ComebackTag v-if="artist.type">
-                {{ artist.type == 'SOLO' ? 'Soloist' : 'Group' }}
-              </ComebackTag>
-              <!-- <ComebackTag v-if="artist.type">K-Pop</CbTag>
-              <ComebackTag v-if="artist.type">K-Hiphop</CbTag> -->
-            </div>
-            <!-- <div class="space-y-2 text-xs">
-              <p>1, 054, 258, 031 streams on Youtube Music</p>
-              <p>1, 054, 258, 031 streams on Youtube Music</p>
-              <p>1, 054, 258, 031 streams on Youtube Music</p>
-            </div> -->
+        <div class="w-full space-y-5 lg:container lg:mx-auto lg:px-5">
+          <h1 v-if="artist.name" class="py-3 text-3xl font-semibold md:text-6xl lg:text-7xl">
+            {{ artist.name }}
+          </h1>
+          <SkeletonDefault v-else class="h-14 w-80 rounded" />
+          <div v-if="artist.platforms?.length" class="flex flex-wrap gap-1.5">
+            <LazyComebackExternalLink
+              v-for="platform in artist.platforms"
+              :key="platform.link"
+              :name="platform.name"
+              :link="platform.link"
+            />
           </div>
-          <!-- Skeleton -->
-          <div v-else class="space-y-2.5">
-            <Skeleton class="h-5 w-40 rounded-full" />
-            <div class="flex gap-2">
-              <Skeleton class="h-3 w-14 rounded" />
-              <Skeleton class="h-3 w-14 rounded" />
-              <Skeleton class="h-3 w-14 rounded" />
-            </div>
-            <Skeleton class="h-3 w-60 rounded-full" />
-            <Skeleton class="h-3 w-60 rounded-full" />
-            <Skeleton class="h-3 w-60 rounded-full" />
+          <div v-else class="flex gap-2">
+            <SkeletonDefault v-for="i in 3" :key="`skeleton_platforms_` + i" class="h-6 w-20 rounded" />
           </div>
-          <!-- Buttons -->
-          <div class="flex flex-wrap gap-2 text-xs">
-            <!-- <button class="w-20 bg-quinary/30 py-1 text-center hover:bg-primary">
-              <p>
-                Like
-                <span class="text-[0.5rem]">(1, 200)</span>
-              </p>
-            </button> -->
-            <NuxtLink
-              :to="`/artist/edit/` + artist.id"
-              class="w-20 bg-quaternary py-1 text-center hover:bg-quinary"
-            >
-              <p>Edit</p>
+          <div v-if="artist.socials?.length" class="flex flex-wrap gap-1.5">
+            <LazyComebackExternalLink
+              v-for="social in artist.socials"
+              :key="social.link"
+              :name="social.name"
+              :link="social.link"
+            />
+          </div>
+          <div v-else-if="artist.socials?.length < 1 && !artist.name" class="flex gap-2">
+            <SkeletonDefault v-for="i in 3" :key="`skeleton_socials_` + i" class="h-6 w-20 rounded" />
+          </div>
+          <div>
+            <NuxtLink :to="`/artist/edit/${artist.id}`" class="bg-secondary px-2 py-1 text-xs font-semibold uppercase">
+              Edit Artist
             </NuxtLink>
           </div>
         </div>
       </div>
-    </div>
-    <!--  Artist Data -->
-    <div
-      class="container mx-auto space-y-10 px-5 pb-10 sm:px-0 md:px-5 md:py-10 2xl:px-0"
-    >
-      <!-- Skeleton -->
-      <div v-if="!artist.description && !artist.name" class="space-y-2">
-        <Skeleton class="h-3 w-3/4 rounded-full" />
-        <Skeleton class="h-3 w-full rounded-full" />
-        <Skeleton class="h-3 w-full rounded-full" />
-        <Skeleton class="h-3 w-3/4 rounded-full" />
-        <Skeleton class="h-3 w-2/4 rounded-full" />
+    </section>
+    <section class="container mx-auto space-y-8 p-5 py-8 lg:space-y-14 lg:py-14">
+      <div v-if="!artist.name" class="space-y-2">
+        <SkeletonDefault class="h-5 w-3/4 rounded" />
+        <SkeletonDefault class="h-5 w-2/4 rounded" />
+        <SkeletonDefault class="h-5 w-2/6 rounded" />
+        <SkeletonDefault class="h-5 w-2/5 rounded" />
       </div>
-      <!-- Description -->
-      <section
-        v-if="artist.description"
-        class="text-sm leading-loose lg:max-w-3xl lg:px-0 xl:max-w-4xl xl:text-base"
-      >
-        <p>{{ artist.description }}</p>
-      </section>
-      <!-- Platforms -->
-      <section v-if="artist.platforms" class="space-y-2">
-        <p class="text-md font-black">Streaming Platforms</p>
-        <div class="flex gap-2">
-          <ComebackExternalLink
-            v-for="social in artist.platforms"
-            :key="social.name"
-            :name="social.name"
-            :link="social.link"
+      <!-- Description Block -->
+      <p v-if="artist.description" class="max-w-6xl whitespace-pre-line leading-8">
+        {{ artist.description }}
+      </p>
+      <!-- Releases Block -->
+      <div v-if="artist.releases?.length" class="space-y-5 pb-8 lg:pb-12">
+        <p class="pl-5 text-xl font-bold lg:pl-0">Releases</p>
+        <section class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0">
+          <CardObject
+            v-for="release in artist.releases"
+            :key="release.id"
+            :mainTitle="release.name"
+            :subTitle="artist.name"
+            :artistId="artist.id"
+            :image="release.images[2]"
+            :object-link="`/release/${release.id}`"
           />
-        </div>
-      </section>
-      <!-- Socials -->
-      <section v-if="artist.socials" class="space-y-2">
-        <p class="text-md font-black">Socials Media Platforms</p>
-        <div class="flex gap-2">
-          <ComebackExternalLink
-            v-for="social in artist.socials"
-            :key="social.name"
-            :name="social.name"
-            :link="social.link"
-          />
-        </div>
-      </section>
-      <!-- Members List -->
-      <section v-if="memberList?.length" class="space-y-2.5">
-        <p class="text-md font-black">Members</p>
-        <div
-          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
-        >
+        </section>
+      </div>
+      <!-- Members Block -->
+      <div v-if="memberList?.length" class="space-y-5 pb-8 lg:pb-12">
+        <p class="pl-5 text-2xl font-bold lg:pl-0">Members</p>
+        <section class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0">
           <CardObject
             v-for="member in memberList"
             :key="member.id"
             :mainTitle="member.name"
             :subTitle="member.type == 'SOLO' ? 'Soloist' : 'Group'"
-            :image="member.images[0]"
+            :image="member.images[2]"
             :object-link="`/artist/${member.id}`"
             isArtist
           />
-        </div>
-      </section>
-      <!-- Subunit List -->
-      <section v-if="subunitList?.length" class="space-y-2.5">
-        <p class="text-md font-black">Members</p>
-        <div
-          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
-        >
+        </section>
+      </div>
+      <!-- Subunits Block -->
+      <div v-if="subunitList?.length" class="space-y-5 pb-8 lg:pb-12">
+        <p class="pl-5 text-2xl font-bold lg:pl-0">Subunits</p>
+        <section class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0">
           <CardObject
-            v-for="unit in subunitList"
-            :key="unit.id"
-            :mainTitle="unit.name"
-            :subTitle="unit.type == 'SOLO' ? 'Soloist' : 'Group'"
-            :image="unit.images[0]"
-            :object-link="`/artist/${unit.id}`"
+            v-for="subunit in subunitList"
+            :key="subunit.id"
+            :mainTitle="subunit.name"
+            :subTitle="subunit.type == 'SOLO' ? 'Soloist' : 'Group'"
+            :image="subunit.images[2]"
+            :object-link="`/artist/${subunit.id}`"
             isArtist
           />
-        </div>
-      </section>
-      <!-- Groups List -->
-      <section v-if="artist.groups?.length" class="space-y-2.5">
-        <p class="text-md font-black">Groups</p>
-        <div
-          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
-        >
+        </section>
+      </div>
+      <!-- Groups Block -->
+      <div v-if="artist.groups?.length" class="space-y-5 pb-8 lg:pb-12">
+        <p class="pl-5 text-2xl font-bold lg:pl-0">Groups</p>
+        <section class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth px-5 md:px-0">
           <CardObject
-            v-for="art in artist.groups"
-            :key="art.id"
-            :mainTitle="art.name"
-            :subTitle="art.type == 'SOLO' ? 'Soloist' : 'Group'"
-            :image="art.images[0]"
-            :object-link="`/artist/${art.id}`"
+            v-for="group in artist.groups"
+            :key="group.id"
+            :mainTitle="group.name"
+            :subTitle="group.type == 'SOLO' ? 'Soloist' : 'Group'"
+            :image="group.images[2]"
+            :object-link="`/artist/${group.id}`"
             isArtist
           />
-        </div>
-      </section>
-      <!-- Releases List -->
-      <section v-if="artist.releases?.length" class="space-y-2.5">
-        <p class="text-md font-black">Releases</p>
-        <div
-          class="remove-scrollbar flex gap-5 overflow-hidden overflow-x-scroll scroll-smooth"
-        >
-          <CardObject
-            v-for="release in artist.releases"
-            :key="release.id"
-            :mainTitle="release.name"
-            :subTitle="release.type == 'ALBUM' ? 'ALBUM' : 'SINGLE'"
-            :image="release.images[release.images.length - 1]"
-            :object-link="`/release/${release.id}`"
-            isReleaseDisplay
-          />
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </section>
   </div>
 </template>
