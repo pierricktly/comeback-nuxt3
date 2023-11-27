@@ -7,6 +7,9 @@ import {
 import VueMultiselect from 'vue-multiselect'
 import _ from 'lodash'
 import type { Artist } from '@/types/artist'
+const { $apollo: apollo } = useNuxtApp()
+
+const { formatArtistData } = useGeneralFunction()
 
 // Original Data
 const artistGQ = ref<Artist>({} as Artist)
@@ -19,65 +22,6 @@ const stylesList = ref(null)
 const isUploadingEdit = ref(false)
 const route = useRoute()
 
-// Get artist data from graphql
-const { data, error, refresh }: any = await useAsyncQuery(
-  
-  GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT,
-  {
-    artistId: route.params.id,
-  },
-).catch((error) => {
-  console.log(error)
-})
-
-const { data: dataAllArtists }: any = await useAsyncQuery(
-  GRAPHQL_QUERY_GET_ALL_ARTISTS,
-).catch((error) => {
-  console.log(error)
-})
-
-const { mutate } = useMutation(GRAPHQL_MUTATION_UPDATE_ARTIST)
-
-const formatArtistData = async (artistData: any) => {
-  if (!artistData) return {} as Artist
-
-  const { attributes } = artistData
-  const artistTmp: Artist = {
-    id: artistData.id,
-    idYoutubeMusic: attributes.idYoutubeMusic || '',
-    name: attributes.name,
-    description: attributes.description || '',
-    type: attributes.type,
-    images: attributes.images,
-    styles: attributes.styles || [],
-    socials: attributes.socials || [],
-    platforms: attributes.platforms || [],
-    members: attributes.members
-      ? await formatArray(attributes.members.data, formatMiniArtistObject)
-      : [],
-    groups: attributes.groups
-      ? await formatArray(attributes.groups.data, formatMiniArtistObject)
-      : [],
-  }
-
-  return artistTmp
-}
-
-const formatArray = async (array: any[], formatter: Function) => {
-  return await Promise.all(array.map(async (item) => await formatter(item)))
-}
-
-const formatMiniArtistObject = async (artist: any) => {
-  let a = {} as Artist
-
-  a.id = artist.id
-  a.name = artist.attributes.name
-  a.images = artist.attributes.images
-  a.type = artist.attributes.type
-
-  return a
-}
-
 const compareFields = (field1: any, field2: any) => {
   return _.isEqual(field1, field2)
 }
@@ -87,7 +31,9 @@ const updateArtist = async () => {
   const updatedFields: Partial<Artist> = {}
 
   Object.keys(artistToEdit.value).forEach((key) => {
+    // @ts-ignore
     if (!compareFields(artistToEdit.value[key], artistGQ.value[key])) {
+      // @ts-ignore
       updatedFields[key] = artistToEdit.value[key]
     }
   })
@@ -116,39 +62,52 @@ const updateArtist = async () => {
     updatedFields.members = membersTmp
   }
 
-  const response = await mutate({
-    data: updatedFields,
-    updateArtistId: route.params.id,
-  })
-    .then((response) => {
-      console.log(response)
-      // isUploadingEdit.value = false
-      // redirect to artist page
-      const router = useRouter()
-      router.push(`/artist/${route.params.id}`)
+  try {
+    // @ts-ignore
+    const response = await apollo.query({
+      query: GRAPHQL_MUTATION_UPDATE_ARTIST,
+      variables: {
+        data: updatedFields,
+        updateArtistId: route.params.id,
+      },
     })
-    .catch((error) => {
-      console.log(error)
-    })
+    const artistData = response.data.artist.data
+    console.log('artistData', artistData)
+    artistGQ.value = await formatArtistData(artistData)
+    artistToEdit.value = _.cloneDeep(await formatArtistData(artistData))
+  } catch (e: any) {
+    if (e.networkError) {
+      console.error('Network error:', e.networkError)
+    } else if (e.graphQLErrors) {
+      e.graphQLErrors.forEach((err: any) => console.error('GraphQL error:', err))
+    } else {
+      console.error('Error fetching posts:', e)
+    }
+  }
 }
 
 onMounted(async () => {
-  // fetch data
-  const artistData = data.value?.artist?.data
-  artistGQ.value = await formatArtistData(artistData)
-  artistToEdit.value = _.cloneDeep(await formatArtistData(artistData))
+  if (!apollo) throw new Error('Apollo client is not initialized')
 
-  if (dataAllArtists.value) {
-    artistList.value = await Promise.all(
-      dataAllArtists.value.artists.data.map(async (member: any) => {
-        return await formatMiniArtistObject(member)
-      }),
-    )
-    // remove artistGQ from artistList
-    if (artistList.value) {
-      artistList.value = artistList.value?.filter((artist: Artist) => {
-        return artist.id != artistGQ.value.id
-      })
+  try {
+    // @ts-ignore
+    const response = await apollo.query({
+      query: GRAPHQL_QUERY_GET_ARTIST_BY_ID_FOR_EDIT,
+      variables: {
+        artistId: route.params.id,
+      },
+    })
+    const artistData = response.data.artist.data
+    console.log('artistData', artistData)
+    artistGQ.value = await formatArtistData(artistData)
+    artistToEdit.value = _.cloneDeep(await formatArtistData(artistData))
+  } catch (e: any) {
+    if (e.networkError) {
+      console.error('Network error:', e.networkError)
+    } else if (e.graphQLErrors) {
+      e.graphQLErrors.forEach((err: any) => console.error('GraphQL error:', err))
+    } else {
+      console.error('Error fetching posts:', e)
     }
   }
 })
@@ -156,9 +115,7 @@ onMounted(async () => {
 
 <template>
   <div class="container mx-auto min-h-[calc(100vh-60px)] space-y-5 p-5 lg:px-10">
-    <div
-      class="flex items-center gap-2 border-b border-zinc-700 pb-1 text-lg font-semibold uppercase lg:text-xl"
-    >
+    <div class="flex items-center gap-2 border-b border-zinc-700 pb-1 text-lg font-semibold uppercase lg:text-xl">
       <p>Artist Edition :</p>
       <p v-if="artistGQ.name">{{ artistGQ.name }}</p>
       <Skeleton v-else class="h-5 w-40 rounded" />
@@ -177,12 +134,7 @@ onMounted(async () => {
       </div>
       <!-- Name & Id -->
       <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <ComebackInput
-          v-if="artistToEdit.name"
-          label="Name"
-          :placeholder="artistGQ.name"
-          v-model="artistToEdit.name"
-        />
+        <ComebackInput v-if="artistToEdit.name" label="Name" :placeholder="artistGQ.name" v-model="artistToEdit.name" />
         <Skeleton v-else class="h-10 w-full rounded" />
         <ComebackInput
           v-if="artistToEdit.id"
@@ -271,11 +223,7 @@ onMounted(async () => {
       <!-- Platforms -->
       <div class="w-full space-y-2">
         <ComebackLabel label="Platforms" />
-        <div
-          v-for="(platform, index) in artistToEdit.platforms"
-          :key="platform"
-          class="flex w-full gap-1"
-        >
+        <div v-for="(platform, index) in artistToEdit.platforms" :key="platform" class="flex w-full gap-1">
           <div class="w-full space-y-3 rounded bg-quinary p-2 text-xs">
             <input
               type="text"
@@ -294,9 +242,7 @@ onMounted(async () => {
           </div>
           <button
             class="rounded bg-primary p-5 text-xs hover:bg-red-900"
-            @click="
-              artistToEdit.platforms.splice(artistToEdit.platforms.indexOf(platform), 1)
-            "
+            @click="artistToEdit.platforms.splice(artistToEdit.platforms.indexOf(platform), 1)"
           >
             Delete
           </button>
@@ -311,11 +257,7 @@ onMounted(async () => {
       <!-- Socials -->
       <div class="w-full space-y-2">
         <ComebackLabel label="Socials" />
-        <div
-          v-for="(social, index) in artistToEdit.socials"
-          :key="social"
-          class="flex w-full gap-2"
-        >
+        <div v-for="(social, index) in artistToEdit.socials" :key="social" class="flex w-full gap-2">
           <div class="w-full space-y-3 rounded bg-quinary p-2 text-xs">
             <input
               type="text"
@@ -334,9 +276,7 @@ onMounted(async () => {
           </div>
           <button
             class="rounded bg-primary p-5 text-xs hover:bg-red-900"
-            @click="
-              artistToEdit.socials.splice(artistToEdit.socials.indexOf(platform), 1)
-            "
+            @click="artistToEdit.socials.splice(artistToEdit.socials.indexOf(platform), 1)"
           >
             Delete
           </button>
